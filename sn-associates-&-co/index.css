@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@layer base {
+    body {
+        @apply antialiased text-slate-900 bg-slate-50;
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        letter-spacing: -0.015em;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        /* Darker slate for better readability on light bg */
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply tracking-tight font-extrabold text-slate-950;
+        /* Near black for headers */
+    }
+
+    /* High-Contrast Input Visibility Fix */
+    input,
+    textarea,
+    select {
+        @apply !text-slate-950 !font-bold;
+        font-size: 16px !important;
+        opacity: 1 !important;
+        color: #000000 !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        @apply !text-slate-400 !font-medium;
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        @apply !ring-4 !ring-blue-500/20 !border-blue-600 !outline-none !transition-all;
+    }
+}
+
+
+/* Custom Utilities or Global overrides can go here */
+@layer utilities {
+    .font-serif {
+        font-family: 'Playfair Display', 'Georgia', serif;
+    }
+
+    .text-deep-slate {
+        color: #0f172a;
+    }
+
+    .bg-deep-slate {
+        background-color: #0f172a;
+    }
+
+    .text-professional-blue {
+        color: #2563eb;
+    }
+
+    .bg-professional-blue {
+        background-color: #2563eb;
+    }
+
+    .text-cyan-accent {
+        color: #22d3ee;
+    }
+
+    .bg-cyan-accent {
+        background-color: #22d3ee;
+    }
+}
