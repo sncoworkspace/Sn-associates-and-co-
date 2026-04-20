@@ -2364,7 +2364,18 @@ const AdminDashboard: React.FC = () => {
                                                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Added Preview</span>
                                                 <span className="text-xs font-black text-slate-900">{new Date().toLocaleDateString()}</span>
                                             </div>
-                                            <button className="bg-slate-950 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-slate-950/10">
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const downloadLink = getDirectDriveLink(newResource.gdriveUrl, 'download');
+                                                    if (downloadLink) {
+                                                        window.open(downloadLink, '_blank');
+                                                    } else {
+                                                        toast.error('G-Drive Link not found or invalid');
+                                                    }
+                                                }}
+                                                className="bg-slate-950 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-slate-950/10 hover:bg-blue-600 transition-all active:scale-95"
+                                            >
                                                 {newResource.buttonText || 'Download Now'}
                                             </button>
                                         </div>

@@ -88,7 +88,6 @@ app.post('/api/auth/login', async (req, res) => {
                 storageUsed: profile?.storage_used || 0
             }
         });
-        });
     } catch (err) {
         console.error("Login failure:", err);
         return res.status(500).json({ error: 'Internal Server Error' });
