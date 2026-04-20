@@ -12,13 +12,18 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Admin & Test Scripts
+create_admin.js
+login_admin.js
+update_admin.js
+verify_db.js
+test_backend.js
+test_backend.cjs
+test_order_api.js
+test_*.js
+*.test.js
+verify_*.js
+sn-associates-&-co.zip
+scratch/
+db_migrate.cjs
+test_supabase_link.cjs
