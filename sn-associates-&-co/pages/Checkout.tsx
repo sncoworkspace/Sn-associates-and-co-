@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { Lock, CreditCard, Loader2, ShieldCheck, Check, Smartphone, Info } from 'lucide-react';
 import { cartDb, authDb, orderDb } from '../services/localDb';
 import { authService } from '../services/authService';
+import { APIClient } from '../services/apiClient';
 import { toast } from 'react-hot-toast';
 
 const Checkout: React.FC = () => {
@@ -30,15 +30,8 @@ const Checkout: React.FC = () => {
     const processRazorpayPayment = async (amount: number) => {
         try {
             setLoading(true);
-            // 1. Create Order
-            const response = await fetch('/api/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, currency: 'INR' })
-            });
-            const order = await response.json();
-
-            if (!order.id) throw new Error('Failed to create order');
+            // 1. Create Order via centralized API Client
+            const order = await APIClient.post<any>('/api/create-order', { amount, currency: 'INR' });
 
             return new Promise((resolve, reject) => {
                 const options = {
@@ -50,25 +43,24 @@ const Checkout: React.FC = () => {
                     image: "/logo-base.png",
                     order_id: order.id,
                     handler: async function (response: any) {
-                        // 2. Verify Payment
-                        const verifyRes = await fetch('/api/verify-payment', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
+                        try {
+                            // 2. Verify Payment via centralized API Client
+                            const verifyData = await APIClient.post<any>('/api/verify-payment', {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature
-                            })
-                        });
-                        const verifyData = await verifyRes.json();
-
-                        if (verifyData.status === 'success') {
-                            resolve({
-                                orderId: response.razorpay_order_id,
-                                paymentId: response.razorpay_payment_id
                             });
-                        } else {
-                            reject(new Error('Payment verification failed'));
+
+                            if (verifyData.status === 'success') {
+                                resolve({
+                                    orderId: response.razorpay_order_id,
+                                    paymentId: response.razorpay_payment_id
+                                });
+                            } else {
+                                reject(new Error('Payment verification failed'));
+                            }
+                        } catch (err: any) {
+                            reject(new Error(err.message || 'Payment verification failed'));
                         }
                     },
                     prefill: {
@@ -109,12 +101,10 @@ const Checkout: React.FC = () => {
 
     const completeOrder = async (paymentId: string) => {
         try {
-            // Must await order creation because it hits Supabase and updates local storage
             const newOrder = await orderDb.createOrder(user!.id, cartItems, total, paymentId);
             cartDb.clearCart();
             toast.success("Purchase Complete!");
 
-            // Delay navigation slightly to let the success animation be seen
             setTimeout(() => {
                 navigate('/order-success', { state: { order: newOrder } });
             }, 800);
@@ -132,8 +122,6 @@ const Checkout: React.FC = () => {
                 <h1 className="text-2xl font-bold text-slate-900 mb-8">Secure Checkout</h1>
 
                 <div className="flex flex-col md:flex-row gap-8">
-
-                    {/* Order Summary */}
                     <div className="flex-1 space-y-6">
                         {!user && (
                             <div className="bg-blue-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden group">
@@ -190,19 +178,10 @@ const Checkout: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Checkout Sidebar */}
                     <div className="md:w-1/3">
                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xl sticky top-24">
                             <h2 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-4">Payment Summary</h2>
                             <div className="space-y-3 mb-6">
-                                <div className="flex justify-between text-sm text-slate-600">
-                                    <span>Course Value</span>
-                                    <span>₹{cartItems.reduce((sum, i) => sum + i.originalPrice, 0)}</span>
-                                </div>
-                                <div className="flex justify-between text-sm text-green-600 font-bold">
-                                    <span>SNA Discount</span>
-                                    <span>-₹{cartItems.reduce((sum, i) => sum + i.originalPrice, 0) - total}</span>
-                                </div>
                                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                                     <span className="font-bold text-slate-900">Total Payable</span>
                                     <span className="font-black text-2xl text-blue-700">₹{total}</span>
@@ -217,20 +196,12 @@ const Checkout: React.FC = () => {
                                 <ShieldCheck size={20} /> Checkout with Razorpay
                             </button>
 
-                            <div className="mt-4 flex items-center justify-center gap-2">
-                                <img src="https://image2url.com/images/1764923101234-a1b2c3d4.png" alt="Visa" className="h-4 opacity-50 grayscale hover:grayscale-0 transition cursor-default" />
-                                <img src="https://image2url.com/images/1764923105678-b2c3d4e5.png" alt="Mastercard" className="h-4 opacity-50 grayscale hover:grayscale-0 transition cursor-default" />
-                                <img src="https://image2url.com/images/1764923110987-c3d4e5f6.png" alt="UPI" className="h-4 opacity-50 grayscale hover:grayscale-0 transition cursor-default" />
-                            </div>
-
                             <p className="text-center text-[10px] text-slate-400 mt-6 flex justify-center items-center gap-1">
                                 <Lock size={10} /> 256-bit SSL Secure Payment Gateway
                             </p>
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
     );

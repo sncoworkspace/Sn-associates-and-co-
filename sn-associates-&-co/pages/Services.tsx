@@ -64,6 +64,11 @@ const Services: React.FC = () => {
     setExpandedItem(expandedItem === id ? null : id);
   };
 
+  const activeService = React.useMemo(() => {
+    if (!expandedItem) return null;
+    return services.find(s => s.id === expandedItem) || null;
+  }, [expandedItem, services]);
+
   const getCategoryIcon = (cat: string) => {
     if (cat.includes('Incorporation')) return Rocket;
     if (cat.includes('Post-Incorporation')) return FileText;
@@ -287,153 +292,7 @@ const Services: React.FC = () => {
                             </button>
                           </div>
 
-                          {/* Expanded Details Modal/Popup */}
-                          {isExpanded && (
-                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fadeIn" onClick={() => toggleItem(service.id)}>
-                              <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                                {/* Modal Header */}
-                                <div className="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10 rounded-t-3xl">
-                                  <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                                      {React.createElement(getCategoryIcon(cat), { size: 28 })}
-                                    </div>
-                                    <div>
-                                      <h3 className="text-2xl font-bold text-slate-900">{service.name}</h3>
-                                      <p className="text-sm text-slate-500 font-medium">{cat}</p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => toggleItem(service.id)}
-                                    className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600 transition-colors"
-                                    aria-label="Close service details"
-                                  >
-                                    <X size={20} />
-                                  </button>
-                                </div>
 
-                                {/* Modal Content */}
-                                <div className="p-8 space-y-8">
-                                  {/* Service Info */}
-                                  <div className="grid grid-cols-1 gap-6">
-                                    <div className="bg-slate-50 rounded-2xl p-6">
-                                      <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Applicable To</div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {service.applicableClients.map(c => (
-                                          <span key={c} className="bg-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg border border-slate-200">
-                                            {c}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Description */}
-                                  <div>
-                                    <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">Service Description</h4>
-                                    <p className="text-slate-700 text-base leading-relaxed">{service.description}</p>
-                                  </div>
-
-                                  {/* Resources Table */}
-                                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                                    <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
-                                      <div className="flex items-center gap-3">
-                                        <BookOpen size={18} className="text-blue-600" />
-                                        <h4 className="font-bold text-slate-800 text-sm">Downloadable Assets & Forms</h4>
-                                      </div>
-                                      <span className="bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
-                                        {service.resources?.length || 0} Assets
-                                      </span>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                      <table className="w-full text-left text-xs">
-                                        <thead className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                          <tr>
-                                            <th className="p-6">Resource Name</th>
-                                            <th className="p-6">Type</th>
-                                            <th className="p-6 text-right">Access</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 font-bold">
-                                          {service.resources?.map((res) => {
-                                            const canAccess = res.isPublic || currentUser;
-                                            return (
-                                              <tr key={res.id} className="hover:bg-slate-50 transition group">
-                                                <td className="p-6">
-                                                  <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 transition shadow-sm">
-                                                      <FileText size={14} />
-                                                    </div>
-                                                    <div>
-                                                      <p className="text-slate-900">{res.name}</p>
-                                                      <div className="flex items-center gap-1.5 mt-0.5">
-                                                        {res.isPublic ? <Globe size={10} className="text-green-500" /> : <Lock size={10} className="text-amber-500" />}
-                                                        <span className={`text-[8px] uppercase tracking-tighter ${res.isPublic ? 'text-green-600' : 'text-amber-600'}`}>
-                                                          {res.isPublic ? 'Public Access' : 'Client Only'}
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </td>
-                                                <td className="p-6">
-                                                  <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest">{res.type}</span>
-                                                </td>
-                                                <td className="p-6 text-right">
-                                                  {canAccess ? (
-                                                    <a
-                                                      href={res.link}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] uppercase font-black tracking-widest transition-all ${res.access === 'Download Allowed'
-                                                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'
-                                                        : 'bg-slate-900 text-white hover:bg-slate-800'
-                                                        }`}
-                                                    >
-                                                      {res.access === 'Download Allowed' ? <Download size={12} /> : <Eye size={12} />}
-                                                      {res.access === 'Download Allowed' ? 'Download' : 'View File'}
-                                                    </a>
-                                                  ) : (
-                                                    <Link
-                                                      to="/login"
-                                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] uppercase font-black tracking-widest bg-slate-100 text-slate-400 hover:bg-slate-200 transition"
-                                                    >
-                                                      <Lock size={12} /> Login to Access
-                                                    </Link>
-                                                  )}
-                                                </td>
-                                              </tr>
-                                            );
-                                          })}
-                                          {(!service.resources || service.resources.length === 0) && (
-                                            <tr>
-                                              <td colSpan={3} className="p-10 text-center text-slate-400 italic text-sm">
-                                                No downloadable resources currently associated with this service.
-                                              </td>
-                                            </tr>
-                                          )}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-
-                                  {/* CTA Section */}
-                                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                                    <div>
-                                      <h4 className="text-2xl font-bold mb-2">Ready to get started?</h4>
-                                      <p className="text-blue-100 text-sm">
-                                        Connect with our execution team for <span className="underline decoration-blue-400 underline-offset-4">{service.name}</span>.
-                                      </p>
-                                    </div>
-                                    <Link
-                                      to={`/contact?service=${encodeURIComponent(service.name)}`}
-                                      className="bg-white text-blue-600 px-8 py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-50 transition shadow-xl shadow-black/10 active:scale-95 whitespace-nowrap"
-                                    >
-                                      Initiate Scoping <ArrowRight size={16} className="inline ml-1" />
-                                    </Link>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -444,6 +303,56 @@ const Services: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Expanded Details Modal/Popup (Root Level) */}
+      {activeService && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fadeIn" onClick={() => setExpandedItem(null)}>
+          <div className="bg-white rounded-3xl max-w-4xl w-full flex flex-col max-h-[500px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between z-10 shrink-0 rounded-t-3xl">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                  {React.createElement(getCategoryIcon(activeService.category), { size: 28 })}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900">{activeService.name}</h3>
+                  <p className="text-sm text-slate-500 font-medium">{activeService.category}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setExpandedItem(null)}
+                className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600 transition-colors"
+                aria-label="Close service details"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8 space-y-8 overflow-y-auto rounded-b-3xl">
+              {/* Service Info */}
+              <div className="grid grid-cols-1 gap-6">
+                <div className="bg-slate-50 rounded-2xl p-6">
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Applicable To</div>
+                  <div className="flex flex-wrap gap-2">
+                    {activeService.applicableClients.map(c => (
+                      <span key={c} className="bg-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg border border-slate-200">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">Service Description</h4>
+                <p className="text-slate-700 text-base leading-relaxed whitespace-pre-wrap">{activeService.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Bottom CTA */}
       <div className="bg-slate-900 py-32 mt-10 relative overflow-hidden">

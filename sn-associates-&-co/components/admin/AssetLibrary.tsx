@@ -52,7 +52,7 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
 
   const [formData, setFormData] = useState<Partial<AcademyAsset>>({
     title: '',
-    type: 'course',
+    type: typeFilter || 'course',
     category: '',
     description: '',
     image_url: '',
@@ -60,7 +60,15 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
     youtube_link: '',
     amount: 0,
     status: 'published',
-    metadata: {}
+    metadata: {
+      duration: '',
+      lessons: '',
+      level: 'Beginner',
+      format: 'PDF',
+      pages: '',
+      mode: 'Remote',
+      requirements: ''
+    }
   });
 
   const fetchAssets = async () => {
@@ -96,25 +104,29 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
     try {
       setIsSubmitting(true);
       if (editingAsset?.id) {
-        const { error } = await supabase
-          .from('academy_assets')
-          .update({
-            ...formData,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingAsset.id);
-        if (error) throw error;
+        const response = await fetch(`/api/academy/assets/${editingAsset.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ asset: formData })
+        });
+        if (!response.ok) throw new Error('Failed to update asset');
         toast.success('Asset updated successfully');
       } else {
-        const { error } = await supabase
-          .from('academy_assets')
-          .insert([{
-            ...formData,
-            total_views: 0,
-            total_downloads: 0,
-            total_applicants: 0
-          }]);
-        if (error) throw error;
+        const response = await fetch('/api/academy/assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            asset: {
+              ...formData,
+              total_views: 0,
+              total_downloads: 0,
+              total_applicants: 0
+            }
+          })
+        });
+        if (!response.ok) throw new Error('Failed to create asset');
         toast.success('Asset created successfully');
       }
       setShowModal(false);
@@ -129,8 +141,11 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this asset?')) return;
     try {
-      const { error } = await supabase.from('academy_assets').delete().eq('id', id);
-      if (error) throw error;
+      const response = await fetch(`/api/academy/assets/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to delete asset');
       toast.success('Asset deleted');
       fetchAssets();
     } catch (err: any) {
@@ -193,16 +208,22 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
 
       try {
         setLoading(true);
-        const { error } = await supabase.from('academy_assets').insert(assetsToImport);
-        if (error) throw error;
+        const response = await fetch('/api/academy/assets/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            assets: assetsToImport,
+            log: {
+              filename: file.name,
+              row_count: assetsToImport.length,
+              target_table: 'academy_assets',
+              status: 'success'
+            }
+          })
+        });
 
-        // Log the import
-        await supabase.from('csv_import_logs').insert([{
-          filename: file.name,
-          row_count: assetsToImport.length,
-          target_table: 'academy_assets',
-          status: 'success'
-        }]);
+        if (!response.ok) throw new Error('Bulk import failed');
 
         toast.success(`Successfully imported ${assetsToImport.length} assets`);
         fetchAssets();
@@ -248,8 +269,24 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
               onClick={() => {
                 setEditingAsset(null);
                 setFormData({
-                  title: '', type: 'course', category: '', description: '',
-                  image_url: '', status: 'published', metadata: {}
+                  title: '',
+                  type: typeFilter || 'course',
+                  category: '',
+                  description: '',
+                  image_url: '',
+                  drive_link: '',
+                  youtube_link: '',
+                  amount: 0,
+                  status: 'published',
+                  metadata: {
+                    duration: '',
+                    lessons: '',
+                    level: 'Beginner',
+                    format: 'PDF',
+                    pages: '',
+                    mode: 'Remote',
+                    requirements: ''
+                  }
                 });
                 setShowModal(true);
               }}
@@ -492,28 +529,126 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
                   </div>
 
                   {formData.type === 'course' && (
-                    <div className="col-span-2 space-y-2 animate-fadeIn">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Video size={10} className="text-red-500" /> YouTube Video URL
-                      </label>
-                      <div className="relative">
-                        <input 
-                          type="text" 
-                          placeholder="https://www.youtube.com/watch?v=..."
-                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 outline-none transition font-bold text-slate-900 text-sm"
-                          value={formData.youtube_link}
-                          onChange={(e) => setFormData({...formData, youtube_link: e.target.value})}
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                          {getYoutubeId(formData.youtube_link || '') && (
-                            <div className="flex items-center gap-1 text-[8px] font-black text-emerald-500 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">
-                              <CheckCircle size={8} /> Valid
-                            </div>
-                          )}
-                          <PlayCircle size={14} className="text-slate-300" />
+                    <>
+                      <div className="col-span-2 space-y-2 animate-fadeIn">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <Video size={10} className="text-red-500" /> YouTube Video URL
+                        </label>
+                        <div className="relative">
+                          <input 
+                            type="text" 
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 outline-none transition font-bold text-slate-900 text-sm"
+                            value={formData.youtube_link}
+                            onChange={(e) => setFormData({...formData, youtube_link: e.target.value})}
+                          />
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {getYoutubeId(formData.youtube_link || '') && (
+                              <div className="flex items-center gap-1 text-[8px] font-black text-emerald-500 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">
+                                <CheckCircle size={8} /> Valid
+                              </div>
+                            )}
+                            <PlayCircle size={14} className="text-slate-300" />
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration (e.g. 10 Hours)</label>
+                        <input 
+                          type="text" 
+                          placeholder="10 Hours"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.duration || ''}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, duration: e.target.value}})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lessons Count</label>
+                        <input 
+                          type="number" 
+                          placeholder="12"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.lessons || ''}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, lessons: e.target.value}})}
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Skill Level</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.level || 'Beginner'}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, level: e.target.value}})}
+                        >
+                          <option value="Beginner">Beginner</option>
+                          <option value="Intermediate">Intermediate</option>
+                          <option value="Advanced">Advanced</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {formData.type === 'ebook' && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Page Count</label>
+                        <input 
+                          type="number" 
+                          placeholder="150"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.pages || ''}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, pages: e.target.value}})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">File Format</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.format || 'PDF'}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, format: e.target.value}})}
+                        >
+                          <option value="PDF">PDF Document</option>
+                          <option value="EPUB">EPUB Reader</option>
+                          <option value="MOBI">MOBI (Kindle)</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {formData.type === 'internship' && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration (e.g. 3 Months)</label>
+                        <input 
+                          type="text" 
+                          placeholder="3 Months"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.duration || ''}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, duration: e.target.value}})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Work Mode</label>
+                        <select 
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900"
+                          value={formData.metadata?.mode || 'Remote'}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, mode: e.target.value}})}
+                        >
+                          <option value="Remote">Remote / Work from Home</option>
+                          <option value="Office">In-Office (Hybrid)</option>
+                          <option value="Onsite">Full-time Onsite</option>
+                        </select>
+                      </div>
+                      <div className="col-span-2 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Requirements</label>
+                        <textarea 
+                          rows={3}
+                          placeholder="e.g. Basic knowledge of Tally, Good communication..."
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition font-bold text-slate-900 resize-none"
+                          value={formData.metadata?.requirements || ''}
+                          onChange={(e) => setFormData({...formData, metadata: {...formData.metadata, requirements: e.target.value}})}
+                        />
+                      </div>
+                    </>
                   )}
 
                   {formData.type !== 'internship' && (
@@ -636,7 +771,7 @@ const AssetLibrary: React.FC<AssetLibraryProps> = ({ typeFilter = 'all', hideHea
                          </div>
                          <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase leading-none">Price Tag</p>
-                            <p className="text-sm font-black text-slate-900">₹{formData.amount || '0'}</p>
+                            <p className="text-sm font-black text-slate-900">Rs. {formData.amount || '0'}</p>
                          </div>
                       </div>
                       <button className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase rounded-lg hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/10">

@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-    Monitor, Package, Briefcase, BookOpen, MessageSquare, FileText, Users, ShoppingBag, ShieldAlert, Plus, RefreshCw, Trash2, Calendar, Clock, Lock, Eye, Download, ExternalLink, ChevronDown, Search, Filter, X, Loader2, Star, AlertCircle, PlayCircle, Video, Layout, Settings, CheckCircle, DollarSign, Ban, LogOut, History, GraduationCap, ArrowLeft, Database, Image as ImageIcon, Send, ListPlus, Trash, FileJson, User as UserIcon, Globe, ShieldCheck, FileSpreadsheet
+    Monitor, Package, Briefcase, BookOpen, MessageSquare, FileText, Users, ShoppingBag, ShieldAlert, Plus, RefreshCw, Trash2, Calendar, Clock, Lock, Eye, Download, ExternalLink, ChevronDown, Search, Filter, X, Loader2, Star, AlertCircle, PlayCircle, Video, Layout, Settings, CheckCircle, DollarSign, Ban, LogOut, History, GraduationCap, ArrowLeft, Database, Image as ImageIcon, Send, ListPlus, Trash, FileJson, User as UserIcon, Globe, ShieldCheck, FileSpreadsheet, Sparkles
 } from 'lucide-react';
 import { authDb, orderDb, securityDb, blogDb, formDb, productDb, servicesDb, resourceDb, settingsDb } from '../services/localDb';
 import { supabase } from '../services/supabase';
@@ -63,6 +63,9 @@ const AdminDashboard: React.FC = () => {
     const [csvUrl, setCsvUrl] = useState('');
     const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [resourceSearchQuery, setResourceSearchQuery] = useState('');
+    const [resourceStatusFilter, setResourceStatusFilter] = useState<'all' | 'Active' | 'Inactive'>('all');
+    const [resourceStatusUpdatingId, setResourceStatusUpdatingId] = useState<string | null>(null);
 
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [activeInquiry, setActiveInquiry] = useState<any>(null);
@@ -484,6 +487,39 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const deleteInquiry = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this inquiry?")) return;
+        try {
+            await formDb.deleteContact(id);
+            toast.success("Inquiry deleted");
+            refreshData();
+        } catch (err) {
+            toast.error("Delete failed");
+        }
+    };
+
+    const deleteBooking = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this booking?")) return;
+        try {
+            await formDb.deleteBooking(id);
+            toast.success("Booking deleted");
+            refreshData();
+        } catch (err) {
+            toast.error("Delete failed");
+        }
+    };
+
+    const deleteEnrollment = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this enrollment?")) return;
+        try {
+            await formDb.deleteEnrollment(id);
+            toast.success("Enrollment deleted");
+            refreshData();
+        } catch (err) {
+            toast.error("Delete failed");
+        }
+    };
+
     const handleAddService = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -575,24 +611,22 @@ const AdminDashboard: React.FC = () => {
 
     const handleAddResource = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Process GDrive URL if present - using enhanced helper
+        setIsSubmitting(true);
         let processedResource = {
             ...newResource,
             imageUrl: getDirectDriveLink(newResource.imageUrl || '', 'image'),
             gdriveUrl: getDirectDriveLink(newResource.gdriveUrl || '', 'view')
         };
 
-        setIsSubmitting(true);
         try {
             if (editingResource) {
                 await resourceDb.update(editingResource, processedResource);
-                if (currentUser) await securityDb.addLog(currentUser.id, `Updated Resource: ${processedResource.title}`, 'success');
-                toast.success("Resource updated!");
+                if (currentUser) await securityDb.addLog(currentUser.id, `Updated Resource: ${newResource.title}`, 'success');
+                toast.success("Resource updated");
             } else {
                 await resourceDb.create(processedResource);
-                if (currentUser) await securityDb.addLog(currentUser.id, `Created Resource: ${processedResource.title}`, 'success');
-                toast.success("Resource published!");
+                if (currentUser) await securityDb.addLog(currentUser.id, `Created Resource: ${newResource.title}`, 'success');
+                toast.success("New resource published");
             }
             setShowResourceModal(false);
             setEditingResource(null);
@@ -601,9 +635,9 @@ const AdminDashboard: React.FC = () => {
                 category: 'Notes', status: 'Active', buttonText: 'Download Now'
             });
             refreshData();
-        } catch (err: any) {
-            console.error("Resource Action Error:", err);
-            toast.error(err.message || "Error saving resource");
+        } catch (error: any) {
+            console.error("Resource management error:", error);
+            toast.error(error.message || "Operation failed. Check admin permissions.");
         } finally {
             setIsSubmitting(false);
         }
@@ -611,10 +645,33 @@ const AdminDashboard: React.FC = () => {
 
     const deleteResource = async (id: string) => {
         if (window.confirm("Delete this resource permanently?")) {
-            await resourceDb.delete(id);
-            if (currentUser) await securityDb.addLog(currentUser.id, `Deleted Resource ID: ${id}`, 'success');
-            toast.success("Resource removed");
+            try {
+                await resourceDb.delete(id);
+                if (currentUser) await securityDb.addLog(currentUser.id, `Deleted Resource ID: ${id}`, 'success');
+                toast.success("Resource removed");
+                refreshData();
+            } catch (error: any) {
+                console.error("Delete Resource Error:", error);
+                toast.error(error.message || "Failed to delete resource. Check admin permissions.");
+            }
+        }
+    };
+
+    const toggleResourceStatus = async (resource: EbookResource) => {
+        setResourceStatusUpdatingId(resource.id);
+        try {
+            await resourceDb.toggleStatus(resource.id, resource.status);
+            const nextStatus = resource.status === 'Active' ? 'Inactive' : 'Active';
+            if (currentUser) {
+                await securityDb.addLog(currentUser.id, `${nextStatus === 'Active' ? 'Activated' : 'Deactivated'} Resource: ${resource.title}`, 'success');
+            }
+            toast.success(`Resource marked as ${nextStatus}`);
             refreshData();
+        } catch (error: any) {
+            console.error("Toggle Resource Status Error:", error);
+            toast.error(error.message || "Failed to update resource status.");
+        } finally {
+            setResourceStatusUpdatingId(null);
         }
     };
 
@@ -634,6 +691,34 @@ const AdminDashboard: React.FC = () => {
         const resources = (newService.resources || []).filter((_, i) => i !== idx);
         setNewService({ ...newService, resources });
     };
+
+    const normalizedResourceQuery = resourceSearchQuery.trim().toLowerCase();
+    const filteredResources = resources.filter(resource => {
+        const matchesQuery = !normalizedResourceQuery || [resource.title, resource.category, resource.description]
+            .filter(Boolean)
+            .some(value => value.toLowerCase().includes(normalizedResourceQuery));
+        const matchesStatus = resourceStatusFilter === 'all' || resource.status === resourceStatusFilter;
+
+        return matchesQuery && matchesStatus;
+    });
+
+    const resourceSummaryCards = [
+        {
+            label: 'Total Resources',
+            value: resources.length,
+            tone: 'bg-blue-50 text-blue-600 border-blue-100'
+        },
+        {
+            label: 'Active',
+            value: resources.filter(resource => resource.status === 'Active').length,
+            tone: 'bg-emerald-50 text-emerald-600 border-emerald-100'
+        },
+        {
+            label: 'Inactive',
+            value: resources.filter(resource => resource.status === 'Inactive').length,
+            tone: 'bg-slate-100 text-slate-600 border-slate-200'
+        }
+    ];
 
     if (isCheckingAuth) return (
         <div className="min-h-screen bg-slate-900 flex items-center justify-center flex-col gap-4">
@@ -681,8 +766,8 @@ const AdminDashboard: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-10 animate-fadeIn custom-scrollbar">
                     <div className="max-w-[1600px] mx-auto w-full">
-                    {activeTab === 'academy-library' && <AssetLibrary hideHeader={true} />}
-                    {activeTab === 'internships' && <AssetLibrary typeFilter="internship" hideHeader={true} />}
+                    {activeTab === 'academy-library' && <AssetLibrary hideHeader={false} />}
+                    {activeTab === 'internships' && <AssetLibrary typeFilter="internship" hideHeader={false} />}
                     {activeTab === 'academy-analytics' && <AcademyAnalytics />}
                     {activeTab === 'dashboard' && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -690,7 +775,7 @@ const AdminDashboard: React.FC = () => {
                                 <div className="absolute -right-4 -bottom-4 bg-emerald-500/5 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
                                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6"><DollarSign size={24} /></div>
                                 <p className="text-slate-500 text-xs font-black uppercase tracking-[0.15em] mb-2">Total Revenue Generated</p>
-                                <h3 className="text-4xl font-extrabold text-slate-950 tracking-tighter">₹{stats.revenue.toLocaleString()}</h3>
+                                <h3 className="text-4xl font-extrabold text-slate-950 tracking-tighter">Rs. {stats.revenue.toLocaleString()}</h3>
                                 <div className="flex items-center gap-2 mt-4 text-emerald-600 font-bold text-[10px] uppercase">
                                     <span className="flex items-center gap-0.5"><Plus size={10} /> 12%</span>
                                     <span className="text-slate-400 font-medium">vs last month</span>
@@ -708,7 +793,7 @@ const AdminDashboard: React.FC = () => {
                             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-500">
                                 <div className="absolute -right-4 -bottom-4 bg-purple-500/5 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
                                 <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-6"><Users size={24} /></div>
-                                <p className="text-slate-500 text-xs font-black uppercase tracking-[0.15em] mb-2">Active Consultations</p>
+                                <p className="text-slate-500 text-xs font-black uppercase tracking-[0.15em] mb-2">Registered Users</p>
                                 <h3 className="text-4xl font-extrabold text-slate-950 tracking-tighter">{stats.totalUsers}</h3>
                                 <div className="flex items-center gap-2 mt-4 text-purple-600 font-bold text-[10px] uppercase">
                                     <span className="flex items-center gap-0.5">Verified Clients</span>
@@ -764,7 +849,7 @@ const AdminDashboard: React.FC = () => {
                                             </div>
                                             <div className="flex justify-between items-center pt-6 border-t border-slate-100">
                                                 <div className="bg-slate-950 text-white px-4 py-2 rounded-xl flex items-center gap-2">
-                                                    <span className="text-xs font-bold opacity-70">₹</span>
+                                                    <span className="text-xs font-bold opacity-70">Rs.</span>
                                                     <span className="text-lg font-black">{p.price}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
@@ -872,15 +957,23 @@ const AdminDashboard: React.FC = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-6 text-right">
-                                                        <button
-                                                            onClick={() => {
-                                                                setActiveInquiry(s);
-                                                                setShowReplyModal(true);
-                                                            }}
-                                                            className="bg-slate-950 text-white px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 transition duration-300 shadow-lg shadow-slate-950/10 flex items-center gap-2 ml-auto"
-                                                        >
-                                                            <Send size={14} /> Respond
-                                                        </button>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setActiveInquiry(s);
+                                                                    setShowReplyModal(true);
+                                                                }}
+                                                                className="bg-slate-950 text-white px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-blue-600 transition duration-300 shadow-lg shadow-slate-950/10 flex items-center gap-2 uppercase tracking-wider"
+                                                            >
+                                                                <Send size={12} /> Respond
+                                                            </button>
+                                                            <button
+                                                                onClick={() => deleteInquiry(s.id)}
+                                                                className="bg-red-50 text-red-500 p-2 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -888,6 +981,117 @@ const AdminDashboard: React.FC = () => {
                                     </table>
                                 </div>
                             </div>
+
+                            {/* BOOKINGS SECTION */}
+                            <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
+                                <div className="px-10 py-8 bg-white border-b border-slate-100 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-xl font-extrabold text-slate-950 tracking-tight">Consultation Bookings</h3>
+                                        <p className="text-slate-500 text-sm mt-1">Track scheduled advisory sessions and appointments.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
+                                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Confirmed:</span>
+                                        <span className="text-lg font-black text-emerald-600 leading-none">{bookings.length}</span>
+                                    </div>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50/50 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] border-b border-slate-100">
+                                                <th className="px-10 py-6">Client Profile</th>
+                                                <th className="px-6 py-6 text-center">Schedule</th>
+                                                <th className="px-6 py-6">Transaction ID</th>
+                                                <th className="px-10 py-6 text-right">Management</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {bookings.map((b, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50/50 transition duration-300">
+                                                    <td className="px-10 py-6">
+                                                        <div className="font-extrabold text-slate-950 text-sm">{b.name}</div>
+                                                        <div className="text-[11px] text-slate-500 font-medium mt-0.5">{b.email}</div>
+                                                    </td>
+                                                    <td className="px-6 py-6">
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="bg-blue-600 text-white font-black px-3 py-1 rounded-lg text-[10px] uppercase tracking-wider">{b.date}</span>
+                                                            <span className="text-[11px] text-slate-500 font-bold mt-1 uppercase tracking-widest">{b.time}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6">
+                                                        <code className="text-[10px] bg-slate-100 text-slate-500 px-2.5 py-1.5 rounded-lg font-mono font-bold">{b.payment_id || 'N/A'}</code>
+                                                    </td>
+                                                    <td className="px-10 py-6 text-right">
+                                                       <button
+                                                           onClick={() => deleteBooking(b.id)}
+                                                           className="bg-red-50 text-red-500 p-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm ml-auto flex items-center justify-center"
+                                                       >
+                                                           <Trash2 size={16} />
+                                                       </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* ENROLLMENTS SECTION */}
+                            <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
+                                <div className="px-10 py-8 bg-white border-b border-slate-100 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-xl font-extrabold text-slate-950 tracking-tight">Academy Enrollments</h3>
+                                        <p className="text-slate-500 text-sm mt-1">Monitor internship registrations and program participants.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100">
+                                        <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">Enrolled:</span>
+                                        <span className="text-lg font-black text-indigo-600 leading-none">{enrollments.length}</span>
+                                    </div>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50/50 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] border-b border-slate-100">
+                                                <th className="px-10 py-6">Student Identity</th>
+                                                <th className="px-6 py-6">Academic/Professional</th>
+                                                <th className="px-6 py-6 text-center">Program</th>
+                                                <th className="px-6 py-6 text-center">Status</th>
+                                                <th className="px-10 py-6 text-right">Management</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {enrollments.map((e, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50/50 transition duration-300">
+                                                    <td className="px-10 py-6">
+                                                        <div className="font-extrabold text-slate-950 text-sm">{e.name}</div>
+                                                        <div className="text-[11px] text-slate-500 font-medium mt-0.5">{e.email}</div>
+                                                    </td>
+                                                    <td className="px-6 py-6">
+                                                        <div className="text-slate-600 text-xs font-bold leading-relaxed max-w-[200px] line-clamp-1">{e.college_profession}</div>
+                                                     </td>
+                                                     <td className="px-6 py-6">
+                                                         <div className="flex justify-center">
+                                                            <span className="bg-indigo-600 text-white font-black px-3 py-1 rounded-lg text-[9px] uppercase tracking-wider whitespace-nowrap">{e.program}</span>
+                                                         </div>
+                                                     </td>
+                                                     <td className="px-6 py-6">
+                                                         <div className="flex justify-center">
+                                                            <span className="bg-emerald-50 text-emerald-700 font-black px-3 py-1 rounded-lg text-[9px] uppercase tracking-wider border border-emerald-100">{e.payment_status || 'Paid'}</span>
+                                                         </div>
+                                                     </td>
+                                                     <td className="px-10 py-6 text-right">
+                                                        <button
+                                                            onClick={() => deleteEnrollment(e.id)}
+                                                            className="bg-red-50 text-red-500 p-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm ml-auto flex items-center justify-center"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                     </td>
+                                                 </tr>
+                                             ))}
+                                         </tbody>
+                                     </table>
+                                 </div>
+                             </div>
                         </div>
                     )}
 
@@ -1372,8 +1576,45 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {resourceSummaryCards.map(card => (
+                                    <div key={card.label} className={`rounded-[2rem] border p-6 bg-white shadow-sm ${card.tone}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">{card.label}</p>
+                                        <h4 className="mt-3 text-3xl font-extrabold leading-none">{card.value}</h4>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-white px-6 py-5 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col xl:flex-row xl:items-center gap-4 xl:justify-between">
+                                <div className="relative flex-1 max-w-2xl">
+                                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        value={resourceSearchQuery}
+                                        onChange={e => setResourceSearchQuery(e.target.value)}
+                                        className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white transition-all text-sm font-medium text-slate-900"
+                                        placeholder="Search by title, category, or description"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {(['all', 'Active', 'Inactive'] as const).map(status => (
+                                        <button
+                                            key={status}
+                                            type="button"
+                                            onClick={() => setResourceStatusFilter(status)}
+                                            className={`px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border ${
+                                                resourceStatusFilter === status
+                                                    ? 'bg-slate-950 text-white border-slate-950'
+                                                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                                            }`}
+                                        >
+                                            {status === 'all' ? 'All Statuses' : status}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {resources.map(r => (
+                                {filteredResources.map(r => (
                                     <div key={r.id} className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden group hover:border-blue-400 hover:shadow-2xl transition-all duration-500">
                                         <div className="relative h-56 overflow-hidden">
                                             <img src={r.imageUrl} alt={r.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onError={(e) => (e.currentTarget.src = 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800')} />
@@ -1391,6 +1632,24 @@ const AdminDashboard: React.FC = () => {
                                                     <span className="text-xs font-black text-slate-950">{new Date(r.createdAt).toLocaleDateString()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => toggleResourceStatus(r)}
+                                                        disabled={resourceStatusUpdatingId === r.id}
+                                                        className={`h-10 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                                                            r.status === 'Active'
+                                                                ? 'bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white'
+                                                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white'
+                                                        } disabled:opacity-60 disabled:pointer-events-none`}
+                                                    >
+                                                        {resourceStatusUpdatingId === r.id ? (
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                        ) : r.status === 'Active' ? (
+                                                            <Ban size={14} />
+                                                        ) : (
+                                                            <CheckCircle size={14} />
+                                                        )}
+                                                        {r.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                                    </button>
                                                     <button onClick={() => {
                                                         setEditingResource(r.id);
                                                         setNewResource(r);
@@ -1406,10 +1665,12 @@ const AdminDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {resources.length === 0 && (
+                                {filteredResources.length === 0 && (
                                     <div className="col-span-full py-20 text-center bg-white rounded-[2.5rem] border border-dashed border-slate-300">
                                         <Package className="mx-auto text-slate-300 mb-4" size={48} />
-                                        <p className="text-slate-400 font-bold">No digital resources published yet.</p>
+                                        <p className="text-slate-400 font-bold">
+                                            {resources.length === 0 ? 'No digital resources published yet.' : 'No resources match the current search or filter.'}
+                                        </p>
                                     </div>
                                 )}
                             </div>

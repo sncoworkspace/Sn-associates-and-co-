@@ -22,13 +22,21 @@ const Contact: React.FC = () => {
       email: formData.get('email'),
       phone: formData.get('phone'),
       service: formData.get('service'),
+      company: formData.get('company'),
       message: formData.get('message'),
       created_at: new Date().toISOString()
     };
 
     try {
-      // Logic consolidated into formDb.submitContact
-      await formDb.submitContact(submissionData);
+      // Use the new backend leads endpoint for email notifications
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/leads`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submissionData)
+      });
+
+      if (!response.ok) throw new Error('Failed to submit lead');
 
       // Trigger Google Ads Conversion
       if (window.gtag) {
@@ -169,6 +177,11 @@ const Contact: React.FC = () => {
                   <option value="Legal Services">Legal Services</option>
                   <option value="Other">Other</option>
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="company" className="block text-sm font-medium text-slate-700 mb-2">Company Name (Optional)</label>
+                <input type="text" id="company" name="company" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Your Company Ltd" />
               </div>
 
               <div>

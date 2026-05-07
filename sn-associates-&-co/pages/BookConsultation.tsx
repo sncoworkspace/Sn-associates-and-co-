@@ -1,9 +1,9 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock, Globe, Calendar, CheckCircle, Loader2, Ban, ChevronDown, Users, Briefcase } from 'lucide-react';
 import { formDb, paymentDb, authDb } from '../services/localDb';
 import { emailService } from '../services/emailService';
+import { APIClient } from '../services/apiClient';
 import AuthModal from '../components/AuthModal';
 import { ADS_ID } from '../components/Analytics';
 
@@ -51,8 +51,9 @@ const BookConsultation: React.FC = () => {
         if(!list || list.length === 0) {
             // Mock fallback if DB is empty for demo purposes
             list = [
-                { id: "00000000-0000-0000-0000-000000000001", name: 'Nagendra M', specialty: 'General Tax & Corporate Law', base_fee: 1000 },
-                { id: "00000000-0000-0000-0000-000000000002", name: 'Srinivas S', specialty: 'GST & Audit Expert', base_fee: 1500 }
+                { id: "1000-tier", name: 'General Tax & Details', specialty: 'General tax and details', base_fee: 1000 },
+                { id: "1500-tier", name: 'GST & Audit Expertise', specialty: 'GST and Audit expertise', base_fee: 1500 },
+                { id: "2000-tier", name: 'All Queries & Startup Solutions', specialty: 'All queries, complaints and startup solutions', base_fee: 2000 }
             ];
         }
         setConsultants(list);
@@ -99,32 +100,20 @@ const BookConsultation: React.FC = () => {
 
   const processPayment = async (amount: number, contact: any) => {
     // 1. Create Order AT THE SAME TIME as storing Pending DB entry to prevent race condition!
-    const response = await fetch('/api/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-          amount, 
-          currency: 'INR',
-          bookingDetails: {
-              consultant_id: selectedConsultant?.id,
-              date: getDateKey(selectedDate!),
-              time: selectedTime,
-              name: contact.name,
-              email: contact.email,
-              phone: contact.phone,
-              notes: contact.notes || "",
-              user_id: authDb.getCurrentUser()?.id || null
-          }
-      })
+    const order = await APIClient.post<any>('/api/create-order', { 
+        amount, 
+        currency: 'INR',
+        bookingDetails: {
+            consultant_id: selectedConsultant?.id,
+            date: getDateKey(selectedDate!),
+            time: selectedTime,
+            name: contact.name,
+            email: contact.email,
+            phone: contact.phone,
+            notes: contact.notes || "",
+            user_id: authDb.getCurrentUser()?.id || null
+        }
     });
-    
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to initialize booking. Please try again.');
-    }
-    
-    const order = await response.json();
-    if (!order.id) throw new Error('Failed to create order');
 
     return new Promise((resolve, reject) => {
       if (!(window as any).Razorpay) {
@@ -142,17 +131,12 @@ const BookConsultation: React.FC = () => {
         order_id: order.id,
         handler: async function (response: any) {
           // 2. Verify Payment & Confirm DB Status Together
-          const verifyRes = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              is_booking: true // Tells server to upgrade status to confirmed
-            })
+          const verifyData = await APIClient.post<any>('/api/verify-payment', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            is_booking: true // Tells server to upgrade status to confirmed
           });
-          const verifyData = await verifyRes.json();
 
           if (verifyData.status === 'success') {
             resolve({

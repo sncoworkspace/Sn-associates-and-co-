@@ -65,50 +65,54 @@ const AuthHashHandler = () => {
   return null;
 };
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 const App: React.FC = () => {
   return (
-    <Router>
-      <ScrollToTop />
-      <AuthHashHandler />
-      <Toaster position="top-right" />
-      <Routes>
-        {/* Admin Route - No Layout */}
-        <Route path="/admin" element={<AdminDashboard />} />
+    <ErrorBoundary>
+      <Router>
+        <ScrollToTop />
+        <AuthHashHandler />
+        <Toaster position="top-right" />
+        <Routes>
+          {/* Admin Route - No Layout */}
+          <Route path="/admin" element={<AdminDashboard />} />
 
-        {/* Standard Routes */}
-        <Route path="*" element={
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/services/tax" element={<Services />} />
-              <Route path="/services/audit" element={<Services />} />
-              <Route path="/services/gst" element={<Services />} />
-              <Route path="/testimonials" element={<Testimonials />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/store" element={<Store />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/my-learning" element={<MyLearning />} />
-              <Route path="/book-consultation" element={<BookConsultation />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/order-success" element={<OrderSuccess />} />
-              <Route path="/careers" element={<Careers />} />
-              <Route path="/snac-academy" element={<SnacAcademy />} />
-              <Route path="/enrollment" element={<Enrollment />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-            </Routes>
-          </Layout>
-        } />
-      </Routes>
-    </Router>
+          {/* Standard Routes */}
+          <Route path="*" element={
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/services/tax" element={<Services />} />
+                <Route path="/services/audit" element={<Services />} />
+                <Route path="/services/gst" element={<Services />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/store" element={<Store />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/my-learning" element={<MyLearning />} />
+                <Route path="/book-consultation" element={<BookConsultation />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/snac-academy" element={<SnacAcademy />} />
+                <Route path="/enrollment" element={<Enrollment />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+              </Routes>
+            </Layout>
+          } />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 };
 

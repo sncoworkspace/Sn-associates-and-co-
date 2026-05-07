@@ -1,17 +1,16 @@
-
 import { supabase } from './supabase';
 import { User, Product, Order, SecurityLog, ProfessionalService, ServiceResource, EbookResource, ConsultationPayment } from '../types';
 import { courses as dummyCourses } from '../data/courseData';
 import { authService } from './authService';
+import { APIClient } from './apiClient';
+import config from './config';
 
 import { emailService } from './emailService';
 import { fallbackServices } from '../data/serviceData';
 
 /**
- * REPLACE THIS URL with your actual Google Apps Script Web App URL 
- * after you deploy it using the instructions provided.
+ * URLs are now managed through centralized config or APIClient.
  */
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycby_placeholder/exec";
 const FORMSPREE_URL = "https://formspree.io/f/xvzprqlw";
 
 // Internal helper to send notifications to Google Sheets and Email
@@ -83,19 +82,21 @@ export const authDb = {
     },
     toggleUserBlock: async (userId: string) => {
         const { data: profile } = await supabase.from('profiles').select('is_blocked').eq('id', userId).single();
-        const { error } = await supabase.from('profiles').update({ is_blocked: !profile?.is_blocked }).eq('id', userId);
-        if (error) throw error;
+        await APIClient.put(`/api/users/${userId}`, { 
+            userData: { is_blocked: !profile?.is_blocked } 
+        });
     },
     updateUser: async (userId: string, userData: Partial<User>) => {
-        const { error } = await supabase.from('profiles').update({
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            role: userData.role,
-            is_blocked: userData.isBlocked
-        }).eq('id', userId);
-        if (error) throw error;
-    }
+        await APIClient.put(`/api/users/${userId}`, {
+            userData: {
+                name: userData.name,
+                phone: userData.phone,
+                role: userData.role,
+                purchased_courses: userData.purchasedCourses,
+                is_blocked: userData.isBlocked
+            }
+        });
+    },
 };
 
 export const productDb = {
@@ -143,60 +144,55 @@ export const productDb = {
         };
     },
     create: async (product: any) => {
-        const { error } = await supabase.from('academy_assets').insert([{
-            title: product.title,
-            type: product.type.toLowerCase(),
-            amount: product.price,
-            image_url: product.image,
-            description: product.description,
-            youtube_link: product.youtubeLink,
-            drive_link: product.driveLink,
-            status: 'published'
-        }]);
-        if (error) throw error;
-    },
-    seedProducts: async () => {
-        const formatted = dummyCourses.map(p => ({
-            title: p.title,
-            type: p.type,
-            price: p.price,
-            original_price: p.originalPrice,
-            image: p.image,
-            description: p.description,
-            features: p.features,
-            rating: p.rating,
-            students: p.students,
-            author: p.author,
-            updated_date: p.updatedDate,
-            language: p.language,
-            drive_link: (p as any).driveLink,
-            content: p.content
-        }));
-
-        const { error } = await supabase.from('products').insert(formatted);
-        if (error) throw error;
-        return true;
-    },
-    delete: async (id: string) => {
-        const { error } = await supabase.from('academy_assets').delete().eq('id', id);
-        if (error) throw error;
+        const response = await fetch('/api/academy/assets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                asset: {
+                    title: product.title,
+                    type: product.type.toLowerCase(),
+                    amount: product.price,
+                    image_url: product.image,
+                    description: product.description,
+                    drive_link: product.driveLink,
+                    youtube_link: product.youtubeLink,
+                    metadata: product.metadata || {},
+                    category: product.category || (product.type === 'internship' ? 'Professional Training' : 'General'),
+                    status: 'published'
+                }
+            })
+        });
+        if (!response.ok) throw new Error('Failed to create asset');
     },
     update: async (id: string, product: any) => {
-        const { error } = await supabase.from('academy_assets').update({
-            title: product.title,
-            type: product.type.toLowerCase(),
-            amount: product.price,
-            image_url: product.image,
-            description: product.description,
-            features: product.features,
-            author: product.author,
-            updated_at: product.updatedDate || new Date().toISOString(),
-            language: product.language,
-            drive_link: product.driveLink,
-            youtube_link: product.youtubeLink,
-            content: product.content
-        }).eq('id', id);
-        if (error) throw error;
+        const response = await fetch(`/api/academy/assets/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                asset: {
+                    title: product.title,
+                    type: product.type.toLowerCase(),
+                    amount: product.price,
+                    image_url: product.image,
+                    description: product.description,
+                    drive_link: product.driveLink,
+                    youtube_link: product.youtubeLink,
+                    metadata: product.metadata || {},
+                    category: product.category,
+                    updated_at: new Date().toISOString()
+                }
+            })
+        });
+        if (!response.ok) throw new Error('Failed to update asset');
+    },
+    delete: async (id: string) => {
+        const response = await fetch(`/api/academy/assets/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete asset');
     }
 };
 
@@ -305,15 +301,13 @@ export const blogDb = {
         }));
     },
     create: async (blog: any) => {
-        const { error } = await supabase.from('blogs').insert([blog]);
-        if (error) throw error;
+        await APIClient.post('/api/blogs', { blog });
     },
     delete: async (id: string) => {
-        await supabase.from('blogs').delete().eq('id', id);
+        await APIClient.delete(`/api/blogs/${id}`);
     },
     update: async (id: string, blog: any) => {
-        const { error } = await supabase.from('blogs').update(blog).eq('id', id);
-        if (error) throw error;
+        await APIClient.put(`/api/blogs/${id}`, { blog });
     }
 };
 
@@ -412,6 +406,18 @@ export const formDb = {
     getEnrollments: async () => {
         const { data } = await supabase.from('enrollments').select('*').order('created_at', { ascending: false });
         return data || [];
+    },
+    deleteContact: async (id: string) => {
+        const response = await fetch(`/api/forms/contact/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to delete inquiry');
+    },
+    deleteBooking: async (id: string) => {
+        const response = await fetch(`/api/forms/bookings/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to delete booking');
+    },
+    deleteEnrollment: async (id: string) => {
+        const response = await fetch(`/api/forms/enrollments/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to delete enrollment');
     }
 };
 
@@ -457,72 +463,13 @@ export const servicesDb = {
     },
 
     create: async (service: Partial<ProfessionalService>) => {
-        const { data, error } = await supabase
-            .from('professional_services')
-            .insert([{
-                name: service.name,
-                category: service.category,
-                description: service.description,
-                applicable_clients: service.applicableClients,
-                fees: service.fees,
-                status: service.status || 'Active'
-            }])
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        if (service.resources && service.resources.length > 0) {
-            const resources = service.resources.map(r => ({
-                service_id: data.id,
-                name: r.name,
-                link: r.link,
-                type: r.type,
-                access: r.access,
-                is_public: r.isPublic
-            }));
-            await supabase.from('service_resources').insert(resources);
-        }
-
-        return data;
+        await APIClient.post('/api/services', { service });
     },
 
     update: async (id: string, service: Partial<ProfessionalService>) => {
-        const { error: serviceError } = await supabase
-            .from('professional_services')
-            .update({
-                name: service.name,
-                category: service.category,
-                description: service.description,
-                applicable_clients: service.applicableClients,
-                fees: service.fees,
-                status: service.status,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', id);
-
-        if (serviceError) throw serviceError;
-
-        if (service.resources) {
-            await supabase.from('service_resources').delete().eq('service_id', id);
-
-            if (service.resources.length > 0) {
-                const resources = service.resources.map(r => ({
-                    service_id: id,
-                    name: r.name,
-                    link: r.link,
-                    type: r.type,
-                    access: r.access,
-                    is_public: r.isPublic
-                }));
-                await supabase.from('service_resources').insert(resources);
-            }
-        }
-    },
-
-    delete: async (id: string) => {
-        const { error } = await supabase.from('professional_services').delete().eq('id', id);
-        if (error) throw error;
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete service');
     },
 
     seedServices: async () => {
@@ -645,55 +592,82 @@ export const resourceDb = {
     },
 
     create: async (resource: Partial<EbookResource>) => {
-        const { data, error } = await supabase
-            .from('resources')
-            .insert([{
-                title: resource.title,
-                description: resource.description,
-                image_url: resource.imageUrl,
-                gdrive_url: resource.gdriveUrl,
-                category: resource.category,
-                status: resource.status || 'Active',
-                button_text: resource.buttonText || 'Download Now'
-            }])
-            .select()
-            .single();
+        const response = await fetch('/api/resources', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                resource: {
+                    title: resource.title,
+                    description: resource.description,
+                    image_url: resource.imageUrl,
+                    gdrive_url: resource.gdriveUrl,
+                    category: resource.category,
+                    status: resource.status || 'Active',
+                    button_text: resource.buttonText || 'Download Now'
+                }
+            })
+        });
 
-        if (error) throw error;
-        return data;
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to create resource');
+        }
+        return await response.json();
     },
 
     update: async (id: string, resource: Partial<EbookResource>) => {
-        const { error } = await supabase
-            .from('resources')
-            .update({
-                title: resource.title,
-                description: resource.description,
-                image_url: resource.imageUrl,
-                gdrive_url: resource.gdriveUrl,
-                category: resource.category,
-                status: resource.status,
-                button_text: resource.buttonText,
-                updated_at: new Date().toISOString()
+        const response = await fetch(`/api/resources/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                resource: {
+                    title: resource.title,
+                    description: resource.description,
+                    image_url: resource.imageUrl,
+                    gdrive_url: resource.gdriveUrl,
+                    category: resource.category,
+                    status: resource.status,
+                    button_text: resource.buttonText,
+                    updated_at: new Date().toISOString()
+                }
             })
-            .eq('id', id);
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to update resource');
+        }
     },
 
     delete: async (id: string) => {
-        const { error } = await supabase.from('resources').delete().eq('id', id);
-        if (error) throw error;
+        const response = await fetch(`/api/resources/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to delete resource');
+        }
     },
 
     toggleStatus: async (id: string, currentStatus: 'Active' | 'Inactive') => {
         const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
-        const { error } = await supabase
-            .from('resources')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq('id', id);
+        const response = await fetch(`/api/resources/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                resource: { status: newStatus, updated_at: new Date().toISOString() }
+            })
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to toggle status');
+        }
     }
 };
 

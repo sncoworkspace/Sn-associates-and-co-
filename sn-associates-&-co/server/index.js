@@ -4,10 +4,39 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Unified Auth Endpoints
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { email, password, name, phone } = req.body;
+        const { data, error } = await supabaseAdmin.auth.signUp({
+            email, password, options: { data: { name, phone, role: 'user' } }
+        });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.json({ success: true, message: 'Registration successful!' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/auth/reset-password-request', async (req, res) => {
+    try {
+        const { email, redirectTo } = req.body;
+        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+            redirectTo: redirectTo || 'http://localhost:3000/reset-password'
+        });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.json({ success: true, message: 'Recovery link sent' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 // Proper CORS matching Vite frontend to allow cookies
 app.use(cors({
@@ -19,9 +48,16 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Initialize Supabase Server Client (Using Service Role for admin overrides)
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://caxpqdkabqqkwrhrajus.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('CRITICAL: Supabase backend credentials missing!');
+    process.exit(1);
+}
+
 const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 // --- Auth Endpoints (Cookie Based) --- //
@@ -463,6 +499,245 @@ app.post('/api/resources/bulk-upload', async (req, res) => {
     }
 });
 
+// 5. Individual Resource Operations
+app.post('/api/resources', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(access_token);
+        if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { resource } = req.body;
+        const { data, error } = await supabaseAdmin.from('resources').insert([resource]).select().single();
+        
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error("Create resource failed:", err);
+        res.status(500).json({ error: err.message || 'Failed to create resource' });
+    }
+});
+
+app.patch('/api/resources/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(access_token);
+        if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { id } = req.params;
+        const { resource } = req.body;
+        const { data, error } = await supabaseAdmin.from('resources').update(resource).eq('id', id).select().single();
+        
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error("Update resource failed:", err);
+        res.status(500).json({ error: err.message || 'Failed to update resource' });
+    }
+});
+
+app.delete('/api/resources/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(access_token);
+        if (authError || !user) return res.status(401).json({ error: 'Invalid session' });
+
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { id } = req.params;
+        const { error } = await supabaseAdmin.from('resources').delete().eq('id', id);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Delete resource failed:", err);
+        res.status(500).json({ error: err.message || 'Failed to delete resource' });
+    }
+});
+
+// 6. Academy Asset Operations
+app.post('/api/academy/assets', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { asset } = req.body;
+        const { data, error } = await supabaseAdmin.from('academy_assets').insert([asset]).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/academy/assets/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { asset } = req.body;
+        const { data, error } = await supabaseAdmin.from('academy_assets').update(asset).eq('id', req.params.id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/academy/assets/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('academy_assets').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 7. Blog Operations
+app.post('/api/blogs', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { blog } = req.body;
+        const { data, error } = await supabaseAdmin.from('blogs').insert([blog]).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/blogs/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { blog } = req.body;
+        const { data, error } = await supabaseAdmin.from('blogs').update(blog).eq('id', req.params.id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/blogs/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('blogs').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 8. Service Operations
+app.post('/api/services', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { service } = req.body;
+        const { data, error } = await supabaseAdmin.from('services').insert([service]).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/services/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { service } = req.body;
+        const { data, error } = await supabaseAdmin.from('services').update(service).eq('id', req.params.id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/services/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('services').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 9. User Management
+app.patch('/api/users/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { userData } = req.body;
+        const { data, error } = await supabaseAdmin.from('profiles').update(userData).eq('id', req.params.id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Helper to get File ID from GDrive URL
 const getFileId = (url) => {
     if (!url) return null;
@@ -536,4 +811,143 @@ app.get('/api/gdrive/fetch-csv', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+
+// 10. Bulk Academy Asset Import
+app.post('/api/academy/assets/bulk', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { assets, log } = req.body;
+        const { data, error } = await supabaseAdmin.from('academy_assets').insert(assets);
+        if (error) throw error;
+
+        if (log) {
+            await supabaseAdmin.from('csv_import_logs').insert([log]);
+        }
+
+        res.json({ success: true, count: assets.length });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 11. Form Management (Inquiries, Bookings, Enrollments, Leads)
+app.post('/api/leads', async (req, res) => {
+    try {
+        const { name, email, phone, service, company, message } = req.body;
+
+        // 1. Save to Supabase (Analytics & Backup)
+        const { error: dbError } = await supabaseAdmin.from('contact_submissions').insert([{
+            name,
+            email,
+            phone,
+            service,
+            message,
+            created_at: new Date().toISOString()
+        }]);
+        
+        if (dbError) console.error("Supabase Log Error:", dbError);
+
+        // 2. Send Internal Lead Email to Admin
+        await resend.emails.send({
+            from: 'SNA Leads <onboarding@resend.dev>',
+            to: ['snco.workspace@gmail.com', 'audit.snassociates@gmail.com'],
+            subject: `New Lead: ${name} (${service || 'General'})`,
+            html: `
+                <div style="font-family: sans-serif; padding: 24px; color: #1e293b;">
+                    <h2 style="color: #1d4ed8; margin-top: 0;">New Lead Received</h2>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Phone:</strong> ${phone}</p>
+                    <p><strong>Service:</strong> ${service || 'General Inquiry'}</p>
+                    <p><strong>Company:</strong> ${company || 'N/A'}</p>
+                    <p><strong>Message:</strong></p>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">
+                        ${message}
+                    </div>
+                </div>
+            `
+        });
+
+        // 3. Send Professional Confirmation to Customer
+        await resend.emails.send({
+            from: 'SN Associates & Co <onboarding@resend.dev>',
+            to: email,
+            subject: 'Inquiry Received | SN Associates & Co',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                    <div style="background: #1e3a8a; color: white; padding: 32px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 24px;">Thank You for Contacting Us</h1>
+                    </div>
+                    <div style="padding: 32px; color: #334155; line-height: 1.6;">
+                        <p>Hello ${name.split(' ')[0]},</p>
+                        <p>We've successfully received your inquiry regarding <strong>${service || 'our professional services'}</strong>.</p>
+                        <p>Our team of tax and legal experts will review your details and contact you within 24 business hours to discuss the next steps.</p>
+                        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #f1f5f9; font-size: 14px; text-align: center;">
+                            <p style="margin: 0; font-weight: 600;">SN Associates & Co</p>
+                            <p style="margin: 4px 0 0; color: #64748b;">Tax, Legal & Compliance Experts</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        });
+
+        res.json({ success: true, message: 'Lead captured successfully' });
+    } catch (err) {
+        console.error("Lead processing error:", err);
+        res.status(500).json({ error: 'Failed to process lead submission' });
+    }
+});
+
+app.delete('/api/forms/contact/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('contact_submissions').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/forms/bookings/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('consultation_bookings').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/forms/enrollments/:id', async (req, res) => {
+    try {
+        const access_token = req.cookies.sb_access_token;
+        if (!access_token) return res.status(401).json({ error: 'Unauthorized' });
+        const { data: { user } } = await supabaseAdmin.auth.getUser(access_token);
+        const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user?.id).single();
+        if (profile?.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+        const { error } = await supabaseAdmin.from('enrollments').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });

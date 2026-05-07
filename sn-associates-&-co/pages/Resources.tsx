@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Download, Search, Filter, Loader2, ExternalLink, FileText, Video, ClipboardList, Info } from 'lucide-react';
-import { resourceDb } from '../services/localDb';
+import { resourceDb, authDb } from '../services/localDb';
+import { toast } from 'react-hot-toast';
 import type { EbookResource, ResourceCategory } from '../types';
 
 const getDirectDriveLink = (url: string, type: 'image' | 'view' | 'download' = 'view') => {
@@ -20,6 +21,78 @@ const Resources: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<ResourceCategory | 'All'>('All');
+    const [processingId, setProcessingId] = useState<string | null>(null);
+
+    const handleBuyResource = async (resource: EbookResource) => {
+        try {
+            setProcessingId(resource.id);
+            const user = authDb.getCurrentUser();
+            const API_URL = import.meta.env.VITE_API_URL || '';
+            const amount = 299;
+
+            const response = await fetch(`${API_URL}/api/create-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, currency: 'INR', receipt: `resource_${resource.id}` })
+            });
+            const order = await response.json();
+
+            if (!order.id) throw new Error('Failed to create order');
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "SN Associates & Co",
+                description: `Purchase: ${resource.title}`,
+                image: "/logo-base.png",
+                order_id: order.id,
+                handler: async function (response: any) {
+                    try {
+                        const verifyRes = await fetch(`${API_URL}/api/verify-payment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+                        const verifyData = await verifyRes.json();
+
+                        if (verifyData.status === 'success') {
+                            toast.success("Payment Successful! Downloading...");
+                            window.open(getDirectDriveLink(resource.gdriveUrl, 'download'), '_blank');
+                        } else {
+                            toast.error('Payment verification failed');
+                        }
+                    } catch (err) {
+                        toast.error('Error verifying payment');
+                    }
+                },
+                prefill: {
+                    name: user?.name || '',
+                    email: user?.email || '',
+                    contact: user?.phone || ''
+                },
+                theme: {
+                    color: "#1e40af"
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                toast.error(response.error.description || 'Payment Failed');
+            });
+            rzp.open();
+
+        } catch (error: any) {
+            console.error('Payment error', error);
+            toast.error(error.message || 'Payment process interrupted');
+        } finally {
+            setProcessingId(null);
+        }
+    };
 
     useEffect(() => {
         fetchResources();
@@ -160,15 +233,14 @@ const Resources: React.FC = () => {
                                                 <ExternalLink size={12} className="text-blue-500" /> Secure Link
                                             </span>
                                         </div>
-                                        <a
-                                            href={getDirectDriveLink(resource.gdriveUrl, 'download')}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 bg-slate-950 text-white px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-95 group/btn"
+                                        <button
+                                            onClick={() => handleBuyResource(resource)}
+                                            disabled={processingId === resource.id}
+                                            className="inline-flex items-center gap-2 bg-slate-950 text-white px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-95 group/btn disabled:opacity-70"
                                         >
-                                            {resource.buttonText || 'Download Now'}
-                                            <Download size={16} className="group-hover/btn:translate-y-0.5 transition-transform" />
-                                        </a>
+                                            {processingId === resource.id ? <Loader2 className="animate-spin" size={16} /> : (resource.buttonText || 'Buy for ₹299')}
+                                            {processingId !== resource.id && <Download size={16} className="group-hover/btn:translate-y-0.5 transition-transform" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
