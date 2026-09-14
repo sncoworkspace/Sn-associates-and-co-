@@ -63,6 +63,23 @@ export const authDb = {
     getCurrentUser: (): User | null => {
         return authService.getCurrentUserSync();
     },
+    setCurrentUser: (user: User | null) => {
+        authService.setCachedUser(user);
+        if (user) {
+            try {
+                localStorage.setItem('sn_db_current_user', JSON.stringify(user));
+                localStorage.setItem('sn_user_storage', JSON.stringify(user));
+                const rawUsers = localStorage.getItem('snac_local_users');
+                if (rawUsers && user.email) {
+                    const usersDb = JSON.parse(rawUsers);
+                    if (usersDb[user.email.toLowerCase()]) {
+                        usersDb[user.email.toLowerCase()].user = user;
+                        localStorage.setItem('snac_local_users', JSON.stringify(usersDb));
+                    }
+                }
+            } catch (e) {}
+        }
+    },
     logout: async () => {
         await authService.logout();
     },
@@ -101,47 +118,70 @@ export const authDb = {
 
 export const productDb = {
     getAll: async (): Promise<Product[]> => {
-        const { data } = await supabase.from('academy_assets').select('*').eq('status', 'published').order('created_at', { ascending: false });
-        return (data || []).map(p => ({
-            id: p.id,
-            title: p.title,
-            type: p.type as any,
-            price: p.amount || 0,
-            originalPrice: p.amount || 0,
-            image: p.image_url || 'https://images.unsplash.com/photo-1454165833767-1316b044d1d7?auto=format&fit=crop&q=80&w=800',
-            description: p.description,
-            features: p.features || [],
-            rating: p.rating || 5.0,
-            students: p.students || 0,
-            author: p.author || 'Nagendra M',
-            updatedDate: p.updated_at || new Date().toISOString(),
-            language: p.language || 'English',
-            driveLink: p.drive_link,
-            youtubeLink: p.youtube_link,
-            content: p.content || []
-        }));
+        let dbProducts: Product[] = [];
+        try {
+            const { data } = await supabase.from('academy_assets').select('*').eq('status', 'published').order('created_at', { ascending: false });
+            if (data && data.length > 0) {
+                dbProducts = data.map(p => ({
+                    id: p.id,
+                    title: p.title,
+                    type: p.type as any,
+                    price: p.amount || 0,
+                    originalPrice: p.amount || 0,
+                    image: p.image_url || 'https://images.unsplash.com/photo-1454165833767-1316b044d1d7?auto=format&fit=crop&q=80&w=800',
+                    description: p.description,
+                    features: p.features || [],
+                    rating: p.rating || 5.0,
+                    students: p.students || 0,
+                    author: p.author || 'Nagendra M',
+                    updatedDate: p.updated_at || new Date().toISOString(),
+                    language: p.language || 'English',
+                    driveLink: p.drive_link,
+                    youtubeLink: p.youtube_link,
+                    content: p.content || []
+                }));
+            }
+        } catch (e) {
+            console.warn('Supabase academy_assets query fallback:', e);
+        }
+
+        // Merge dbProducts with dummyCourses (e-books & masterclasses from courseData)
+        const combined = [...dbProducts];
+        dummyCourses.forEach(c => {
+            if (!combined.some(item => item.id === c.id || item.title.toLowerCase() === c.title.toLowerCase())) {
+                combined.push(c);
+            }
+        });
+        return combined;
     },
     getById: async (id: string): Promise<Product | null> => {
-        const { data } = await supabase.from('academy_assets').select('*').eq('id', id).single();
-        if (!data) return null;
-        return {
-            id: data.id,
-            title: data.title,
-            type: data.type as any,
-            price: data.amount || 0,
-            originalPrice: data.amount || 0,
-            image: data.image_url || 'https://images.unsplash.com/photo-1454165833767-1316b044d1d7?auto=format&fit=crop&q=80&w=800',
-            description: data.description,
-            features: data.features || [],
-            rating: data.rating || 5.0,
-            students: data.students || 0,
-            author: data.author || 'Nagendra M',
-            updatedDate: data.updated_at || new Date().toISOString(),
-            language: data.language || 'English',
-            driveLink: data.drive_link,
-            youtubeLink: data.youtube_link,
-            content: data.content || []
-        };
+        try {
+            const { data } = await supabase.from('academy_assets').select('*').eq('id', id).single();
+            if (data) {
+                return {
+                    id: data.id,
+                    title: data.title,
+                    type: data.type as any,
+                    price: data.amount || 0,
+                    originalPrice: data.amount || 0,
+                    image: data.image_url || 'https://images.unsplash.com/photo-1454165833767-1316b044d1d7?auto=format&fit=crop&q=80&w=800',
+                    description: data.description,
+                    features: data.features || [],
+                    rating: data.rating || 5.0,
+                    students: data.students || 0,
+                    author: data.author || 'Nagendra M',
+                    updatedDate: data.updated_at || new Date().toISOString(),
+                    language: data.language || 'English',
+                    driveLink: data.drive_link,
+                    youtubeLink: data.youtube_link,
+                    content: data.content || []
+                };
+            }
+        } catch (e) {
+            // fallback to dummyCourses
+        }
+        const fallback = dummyCourses.find(c => c.id === id);
+        return fallback || null;
     },
     create: async (product: any) => {
         const response = await fetch('/api/academy/assets', {
@@ -222,17 +262,17 @@ export const orderDb = {
     createOrder: async (userId: string, items: Product[], totalAmount: number, paymentId: string) => {
         const orderId = `ORD-${Date.now()}`;
         const { data: profile } = await supabase.from('profiles').select('purchased_courses, name, email').eq('id', userId).single();
-        const existing = profile?.purchased_courses || [];
+        const localUser = authDb.getCurrentUser();
+        const existing = profile?.purchased_courses || localUser?.purchasedCourses || [];
         const updated = [...new Set([...existing, ...items.map(i => i.id)])];
 
         try {
             await supabase.from('profiles').update({ purchased_courses: updated }).eq('id', userId);
         } catch (err) { console.error(err); }
 
-        const localUser = authDb.getCurrentUser();
-        if (localUser && localUser.id === userId) {
+        if (localUser) {
             localUser.purchasedCourses = updated;
-            localStorage.setItem('sn_db_current_user', JSON.stringify(localUser));
+            authDb.setCurrentUser(localUser);
             window.dispatchEvent(new Event('storage'));
         }
 
@@ -467,9 +507,11 @@ export const servicesDb = {
     },
 
     update: async (id: string, service: Partial<ProfessionalService>) => {
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to delete service');
+        await APIClient.put(`/api/services/${id}`, { service });
+    },
+
+    delete: async (id: string) => {
+        await APIClient.delete(`/api/services/${id}`);
     },
 
     seedServices: async () => {
@@ -537,28 +579,42 @@ export const servicesDb = {
 
 export const securityDb = {
     addLog: async (userId: string, action: string, status: string) => {
-        await supabase.from('security_logs').insert({
-            user_id: userId,
-            action,
-            status,
-            ip_address: '0.0.0.0',
-            timestamp: new Date().toISOString()
-        });
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+        if (!isUuid) return;
+        try {
+            await supabase.from('security_logs').insert({
+                user_id: userId,
+                action,
+                status,
+                ip_address: '0.0.0.0',
+                timestamp: new Date().toISOString()
+            });
+        } catch {}
     },
     getLogs: async (userId: string): Promise<SecurityLog[]> => {
-        const { data } = await supabase
-            .from('security_logs')
-            .select('*')
-            .eq('user_id', userId)
-            .order('timestamp', { ascending: false })
-            .limit(20);
-        return (data || []).map(l => ({
-            id: l.id, userId: l.user_id, action: l.action, timestamp: l.timestamp, ipAddress: l.ip_address, status: l.status as any
-        }));
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+        if (!isUuid) return [];
+        try {
+            const { data } = await supabase
+                .from('security_logs')
+                .select('*')
+                .eq('user_id', userId)
+                .order('timestamp', { ascending: false })
+                .limit(20);
+            return (data || []).map(l => ({
+                id: l.id, userId: l.user_id, action: l.action, timestamp: l.timestamp, ipAddress: l.ip_address, status: l.status as any
+            }));
+        } catch {
+            return [];
+        }
     },
     getAllLogs: async (): Promise<any[]> => {
-        const { data } = await supabase.from('security_logs').select('*, profiles(name, email)').order('timestamp', { ascending: false }).limit(100);
-        return data || [];
+        try {
+            const { data } = await supabase.from('security_logs').select('*, profiles(name, email)').order('timestamp', { ascending: false }).limit(100);
+            return data || [];
+        } catch {
+            return [];
+        }
     }
 };
 

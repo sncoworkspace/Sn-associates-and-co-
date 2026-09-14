@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { cartDb } from '../services/localDb';
 import { Product } from '../types';
 import { Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '../utils/imageAssets';
 
 const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<Product[]>([]);
@@ -50,7 +51,12 @@ const Cart: React.FC = () => {
                     {cartItems.map(item => (
                         <div key={item.id} className="bg-white p-4 rounded-lg border border-slate-200 flex gap-4 items-start shadow-sm">
                             <Link to={`/product/${item.id}`} className="w-24 h-16 bg-slate-200 rounded overflow-hidden shrink-0">
-                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                                <img 
+                                    src={getProductImageUrl(item.id, item.title, item.image)} 
+                                    alt={item.title} 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => handleImageError(e, item.title, item.id)}
+                                />
                             </Link>
                             <div className="flex-grow">
                                 <div className="flex justify-between items-start">
@@ -75,32 +81,36 @@ const Cart: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Checkout Summary Sidebar */}
-                <div className="lg:w-1/3">
-                    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 sticky top-24">
-                        <h2 className="text-lg font-bold text-slate-700 mb-4">Total:</h2>
-                        <div className="text-4xl font-bold text-slate-900 mb-2">₹{total}</div>
-                        <p className="text-slate-500 text-sm mb-6 line-through">₹{cartItems.reduce((sum, i) => sum + i.originalPrice, 0)}</p>
-                        
-                        <button 
-                            onClick={() => navigate('/checkout')}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition flex justify-center items-center gap-2"
-                        >
-                            Checkout <ArrowRight size={20} />
-                        </button>
+                        {/* Checkout Summary Sidebar */}
+                        <div className="lg:w-1/3">
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200 sticky top-24">
+                                <h2 className="text-lg font-bold text-slate-700 mb-4">Total:</h2>
+                                <div className="text-4xl font-bold text-slate-900 mb-2">₹{total}</div>
+                                {cartItems.reduce((sum, i) => sum + (i.originalPrice || i.price || 0), 0) > total && (
+                                    <p className="text-slate-500 text-sm mb-6 line-through">₹{cartItems.reduce((sum, i) => sum + (i.originalPrice || i.price || 0), 0)}</p>
+                                )}
+                                
+                                <button 
+                                    onClick={() => navigate('/checkout')}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition flex justify-center items-center gap-2 active:scale-95"
+                                >
+                                    Checkout <ArrowRight size={20} />
+                                </button>
 
-                        <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-600">Subtotal</span>
-                                <span className="font-bold">₹{total}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-600">Discount</span>
-                                <span className="font-bold text-green-600">-₹{cartItems.reduce((sum, i) => sum + i.originalPrice, 0) - total}</span>
+                                <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-slate-600">Subtotal</span>
+                                        <span className="font-bold">₹{total}</span>
+                                    </div>
+                                    {cartItems.reduce((sum, i) => sum + (i.originalPrice || i.price || 0), 0) > total && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-slate-600">Discount</span>
+                                            <span className="font-bold text-green-600">-₹{cartItems.reduce((sum, i) => sum + (i.originalPrice || i.price || 0), 0) - total}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
             </div>
         )}
       </div>

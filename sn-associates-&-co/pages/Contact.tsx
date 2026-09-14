@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader2, Linkedin, Instagram, Twitter, Youtube, Facebook, MessageCircle, ExternalLink } from 'lucide-react';
 import { formDb } from '../services/localDb';
 import { ADS_ID } from '../components/Analytics';
+import { SOCIAL_LINKS } from '../data/socialData';
 
 const Contact: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -105,6 +106,36 @@ const Contact: React.FC = () => {
                     <h3 className="font-bold text-slate-800">Email Us</h3>
                     <p className="text-slate-600">snco.workspace@gmail.com</p>
                     <p className="text-slate-600">audit.snassociates@gmail.com</p>
+                  </div>
+                </div>
+
+                {/* Social Media Channels Grid */}
+                <div className="pt-4 border-t border-slate-200">
+                  <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-3">Official Social Channels</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {SOCIAL_LINKS.map((s) => (
+                      <a
+                        key={s.name}
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2.5 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group shadow-2xs"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-slate-700 transition-colors shrink-0">
+                          {s.iconName === 'linkedin' && <Linkedin size={14} />}
+                          {s.iconName === 'instagram' && <Instagram size={14} />}
+                          {s.iconName === 'twitter' && <Twitter size={14} />}
+                          {s.iconName === 'youtube' && <Youtube size={14} />}
+                          {s.iconName === 'facebook' && <Facebook size={14} />}
+                          {s.iconName === 'whatsapp' && <MessageCircle size={14} />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 truncate">{s.name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{s.handle}</p>
+                        </div>
+                        <ExternalLink size={10} className="text-slate-300 group-hover:text-blue-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    ))}
                   </div>
                 </div>
               </div>

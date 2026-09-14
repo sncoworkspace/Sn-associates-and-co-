@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Clock, Globe, Calendar, CheckCircle, Loader2, Ban, ChevronDown, Users, Briefcase } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Clock, Globe, Calendar, CheckCircle, Loader2, Ban, ChevronDown, Users, Briefcase, Sparkles, ShieldCheck, CheckCircle2, PhoneCall } from 'lucide-react';
 import { formDb, paymentDb, authDb } from '../services/localDb';
 import { emailService } from '../services/emailService';
 import { APIClient } from '../services/apiClient';
@@ -14,9 +14,12 @@ const timeSlots = [
   "05:00 PM", "05:30 PM", "06:00 PM"
 ];
 
-
 const BookConsultation: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const prefilledService = searchParams.get('service') || '';
+
+  const [consultationType, setConsultationType] = useState<'free' | 'paid'>('free');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [step, setStep] = useState<'consultant' | 'picker' | 'details' | 'success'>('consultant');
@@ -24,7 +27,12 @@ const BookConsultation: React.FC = () => {
   const [bookedMap, setBookedMap] = useState<Record<string, string[]>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [consultants, setConsultants] = useState<any[]>([]);
-  const [selectedConsultant, setSelectedConsultant] = useState<any | null>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState<any | null>({
+    id: "free-discovery",
+    name: "15-Min Free Strategy Call",
+    specialty: prefilledService ? `Inquiry for ${prefilledService}` : "Company Setup, GST & Accounting Discovery",
+    base_fee: 0
+  });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -127,7 +135,7 @@ const BookConsultation: React.FC = () => {
         currency: order.currency,
         name: "SN Associates & Co",
         description: `Consultation with ${selectedConsultant?.name}`,
-        image: "https://your-logo-url.com/logo.png",
+        image: "/logo-base.png",
         order_id: order.id,
         handler: async function (response: any) {
           // 2. Verify Payment & Confirm DB Status Together
@@ -210,21 +218,39 @@ const BookConsultation: React.FC = () => {
     // ------------------------
 
     try {
+      let paymentId = `free_${Date.now()}`;
+      let orderId = `ord_free_${Date.now()}`;
 
-      // Step 1: Process Payment (This now safely interacts with server to lock slot FIRST)
-      const paymentDetails: any = await processPayment(amount, { name, email, phone, notes });
+      if (amount > 0) {
+        // Paid In-Depth Advisory
+        const paymentDetails: any = await processPayment(amount, { name, email, phone, notes });
+        paymentId = paymentDetails.paymentId;
+        orderId = paymentDetails.orderId;
+      } else {
+        // Free 15-Minute Strategy Discovery Call: Book directly
+        await formDb.submitBooking({
+          name,
+          email,
+          phone,
+          date: getDateKey(selectedDate!),
+          time: selectedTime,
+          notes: `[Free Strategy Discovery] Service: ${prefilledService || selectedConsultant.name}. Notes: ${notes || 'None'}`,
+          payment_id: paymentId,
+          user_id: authDb.getCurrentUser()?.id || null
+        });
+      }
 
       const currentUser = authDb.getCurrentUser();
 
-      // Store Payment Log (Booking is already handled on server securely during processPayment!)
+      // Store Payment / Booking Record
       await paymentDb.createPayment({
-        userId: currentUser?.id, // Null if guest
+        userId: currentUser?.id,
         name, email, phone,
         serviceName: `Consultation - ${selectedConsultant.name}`,
         amount: amount,
-        razorpayOrderId: paymentDetails.orderId,
-        razorpayPaymentId: paymentDetails.paymentId,
-        paymentStatus: 'success',
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        paymentStatus: amount === 0 ? 'free_consultation' : 'success',
         createdAt: new Date().toISOString()
       });
 
@@ -238,8 +264,8 @@ const BookConsultation: React.FC = () => {
           date: selectedDate?.toLocaleDateString(),
           time: selectedTime,
           service: `Consultation with ${selectedConsultant.name}`,
-          notes,
-          payment_id: paymentDetails.paymentId
+          notes: notes || prefilledService,
+          payment_id: paymentId
         });
       } catch (emailErr) {
         console.error("Failed to send confirmation email", emailErr);
@@ -292,32 +318,124 @@ const BookConsultation: React.FC = () => {
           
           {step === 'consultant' && (
             <div className="p-8 animate-fadeIn">
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Users size={20} className="text-blue-600" /> 1. Select a Consultant</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {consultants.length === 0 ? (
-                  <div className="col-span-full py-10 flex justify-center"><Loader2 className="animate-spin text-blue-500" size={32} /></div>
-                ) : (
-                  consultants.map((c) => (
-                    <button 
-                      key={c.id} 
-                      onClick={() => setSelectedConsultant(c)}
-                      className={`text-left p-6 rounded-2xl border-2 transition-all ${selectedConsultant?.id === c.id ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-500/20' : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-slate-900 text-lg">{c.name}</h3>
-                        <span className="bg-white text-blue-600 font-bold px-3 py-1 rounded-full border border-blue-100 text-sm shadow-sm">₹{c.base_fee}</span>
+              <div className="mb-8">
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConsultationType('free');
+                      setSelectedConsultant({
+                        id: "free-discovery",
+                        name: "15-Min Free Strategy Call",
+                        specialty: prefilledService ? `Inquiry for ${prefilledService}` : "Company Setup, GST & Accounting Discovery",
+                        base_fee: 0
+                      });
+                    }}
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                      consultationType === 'free'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Sparkles size={16} />
+                    <span>Free Strategy Call (₹0)</span>
+                    <span className="bg-emerald-400 text-slate-900 text-[10px] font-black uppercase px-2 py-0.5 rounded-full hidden sm:inline">Popular</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConsultationType('paid');
+                      if (consultants.length > 0) setSelectedConsultant(consultants[0]);
+                    }}
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                      consultationType === 'paid'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <ShieldCheck size={16} />
+                    <span>In-Depth CA Audit (Paid)</span>
+                  </button>
+                </div>
+
+                {/* Free Track Banner */}
+                {consultationType === 'free' ? (
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 border-2 border-blue-500/40 rounded-3xl p-6 md:p-8 shadow-sm">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200">
+                          100% Free • No Payment Required
+                        </span>
+                        <h3 className="text-xl md:text-2xl font-bold text-slate-900 mt-2 font-serif">
+                          15-Minute Strategy & Requirement Call
+                        </h3>
                       </div>
-                      <p className="text-slate-500 text-sm flex items-center gap-2"><Briefcase size={14} className="text-blue-400"/> {c.specialty}</p>
-                    </button>
-                  ))
+                      <div className="text-left md:text-right">
+                        <span className="text-3xl font-black text-blue-600">₹0</span>
+                        <span className="block text-[10px] uppercase font-bold text-slate-400">Zero Obligation</span>
+                      </div>
+                    </div>
+
+                    <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                      Schedule a quick call with our business compliance experts. We review your entity structure, statutory filings, or tax optimization roadmap and suggest the fastest path forward.
+                    </p>
+
+                    {prefilledService && (
+                      <div className="bg-white rounded-xl p-3.5 border border-blue-200 mb-6 flex items-center gap-2 text-xs font-semibold text-blue-900">
+                        <CheckCircle2 size={16} className="text-blue-600 shrink-0" />
+                        <span>Pre-selected requirement: <strong className="underline">{prefilledService}</strong></span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-700 font-medium">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                        <span>Phone / Google Meet</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                        <span>Entity & Tax Guidance</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                        <span>Transparent Quote</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><Users size={20} className="text-blue-600" /> 1. Select Advisory Specialist</h2>
+                    <p className="text-slate-500 text-xs mb-6">In-depth consultation includes document scrutiny, dispute advisory, and written legal opinion note.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {consultants.length === 0 ? (
+                        <div className="col-span-full py-10 flex justify-center"><Loader2 className="animate-spin text-blue-500" size={32} /></div>
+                      ) : (
+                        consultants.map((c) => (
+                          <button 
+                            key={c.id} 
+                            onClick={() => setSelectedConsultant(c)}
+                            className={`text-left p-6 rounded-2xl border-2 transition-all ${selectedConsultant?.id === c.id ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-500/20' : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-bold text-slate-900 text-lg">{c.name}</h3>
+                              <span className="bg-white text-blue-600 font-bold px-3 py-1 rounded-full border border-blue-100 text-sm shadow-sm">₹{c.base_fee}</span>
+                            </div>
+                            <p className="text-slate-500 text-sm flex items-center gap-2"><Briefcase size={14} className="text-blue-400"/> {c.specialty}</p>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
+
               <button 
                 onClick={() => setStep('picker')} 
                 disabled={!selectedConsultant} 
-                className="mt-8 w-full bg-slate-900 hover:bg-black text-white text-lg font-bold py-5 rounded-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-3 shadow-lg active:scale-[0.98]"
+                className="mt-4 w-full bg-slate-900 hover:bg-black text-white text-base md:text-lg font-bold py-4 md:py-5 rounded-2xl transition-all disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-3 shadow-lg active:scale-[0.98]"
               >
-                Find Available Timings <ChevronRight size={20} />
+                <span>Choose Your Preferred Date & Time</span>
+                <ChevronRight size={20} />
               </button>
             </div>
           )}
@@ -426,15 +544,36 @@ const BookConsultation: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Meeting Notes</label>
-                  <textarea name="notes" rows={3} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Tell us what you'd like to discuss..."></textarea>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-wider">Meeting Notes / Inquiry Details</label>
+                  <textarea 
+                    name="notes" 
+                    rows={3} 
+                    defaultValue={prefilledService ? `Requirement: ${prefilledService}. Please let me know the procedure and required documents.` : ''} 
+                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm text-slate-900" 
+                    placeholder="Tell us about your business, tax requirements, or questions..."
+                  ></textarea>
                 </div>
                 <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-center justify-between">
-                  <div className="text-sm text-blue-800 font-bold">Consultation Fee ({selectedConsultant?.name})</div>
-                  <div className="text-xl font-black text-blue-600">₹{selectedConsultant?.base_fee || 1000}</div>
+                  <div className="text-sm text-blue-900 font-bold">
+                    <span>{selectedConsultant?.name}</span>
+                    <span className="block text-xs text-blue-700/70 font-normal">{selectedConsultant?.specialty}</span>
+                  </div>
+                  <div className="text-xl font-black text-blue-600">
+                    {selectedConsultant?.base_fee === 0 ? (
+                      <span className="text-emerald-600 bg-emerald-100 px-3 py-1 rounded-lg text-sm uppercase">Free (₹0)</span>
+                    ) : (
+                      `₹${selectedConsultant?.base_fee}`
+                    )}
+                  </div>
                 </div>
-                <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-5 rounded-2xl transition-all shadow-xl active:scale-[0.98]">
-                  {isSubmitting ? <Loader2 size={24} className="animate-spin mx-auto" /> : `Pay ₹${selectedConsultant?.base_fee || 1000} & Confirm Appointment`}
+                <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base md:text-lg font-bold py-4 md:py-5 rounded-2xl transition-all shadow-xl active:scale-[0.98]">
+                  {isSubmitting ? (
+                    <Loader2 size={24} className="animate-spin mx-auto" />
+                  ) : selectedConsultant?.base_fee === 0 ? (
+                    'Confirm Free Appointment (No Payment Required)'
+                  ) : (
+                    `Pay ₹${selectedConsultant?.base_fee} & Confirm Appointment`
+                  )}
                 </button>
               </form>
             </div>
@@ -442,10 +581,27 @@ const BookConsultation: React.FC = () => {
 
           {step === 'success' && (
             <div className="p-12 text-center flex flex-col items-center justify-center min-h-[500px] animate-fadeIn">
-              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-8 animate-bounce shadow-lg"><CheckCircle size={48} /></div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Payment Successful!</h2>
-              <p className="text-slate-500 max-w-md mx-auto mb-10 text-lg">Your appointment for <span className="font-bold text-slate-900">{selectedDate?.toLocaleDateString()} at {selectedTime}</span> has been confirmed.</p>
-              <button onClick={() => navigate('/')} className="bg-slate-900 text-white font-bold px-10 py-4 rounded-full">Back to Home</button>
+              <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-8 animate-bounce shadow-lg">
+                <CheckCircle size={48} />
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                {selectedConsultant?.base_fee === 0 ? 'Appointment Confirmed!' : 'Booking & Payment Successful!'}
+              </h2>
+              <p className="text-slate-500 max-w-md mx-auto mb-6 text-base">
+                Your consultation for <strong className="text-slate-900">{selectedDate?.toLocaleDateString()} at {selectedTime}</strong> has been confirmed.
+              </p>
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 max-w-md w-full mb-8 text-xs text-slate-600 text-left space-y-1.5">
+                <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  <span>Next Steps:</span>
+                </div>
+                <p>1. Our expert team will review your requirement.</p>
+                <p>2. A Google Meet / phone callback invitation will be sent to your email.</p>
+                <p>3. Keep your documents (PAN, GST, ITR records) handy if applicable.</p>
+              </div>
+              <button onClick={() => navigate('/')} className="bg-slate-900 hover:bg-black text-white font-bold px-10 py-4 rounded-full transition shadow-md">
+                Back to Home
+              </button>
             </div>
           )}
         </div>

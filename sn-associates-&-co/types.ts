@@ -113,7 +113,7 @@ export interface ServiceResource {
 export interface ProfessionalService {
   id: string;
   name: string;
-  category: ServiceCategory;
+  category: ServiceCategory | string;
   description: string;
   applicableClients: ClientType[];
   fees?: string;
@@ -122,6 +122,14 @@ export interface ProfessionalService {
   createdAt: string;
   updatedAt: string;
   image?: string;
+  feeNote?: string;
+  priceNumber?: number;
+  rating?: number;
+  reviewCount?: number;
+  turnaround?: string;
+  popular?: boolean;
+  categoryKey?: string;
+  categorySlug?: string;
 }
 
 export type ResourceCategory = 'Notes' | 'PDF' | 'Video' | 'Study Material' | 'Other';

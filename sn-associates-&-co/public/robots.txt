@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://snassociatesandco.com/sitemap.xml
+Sitemap: https://snassociates.in/sitemap.xml

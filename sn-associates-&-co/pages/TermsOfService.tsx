@@ -10,11 +10,11 @@ const TermsOfService: React.FC = () => {
                 <div className="bg-slate-900 text-white p-10 md:p-16 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 bg-blue-600/20 text-blue-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-blue-500/20">
-                            <Scale size={14} /> Legal Documentation
+                        <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-blue-400/30 shadow-xs">
+                            <Scale size={14} className="text-blue-400" /> Legal Documentation
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">Terms of Service</h1>
-                        <p className="text-slate-400 text-lg">Last Updated: {new Date().toLocaleDateString()}</p>
+                        <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 text-white !text-white tracking-tight drop-shadow-sm">Terms of Service</h1>
+                        <p className="text-slate-200 text-lg font-medium">Last Updated: {new Date().toLocaleDateString()}</p>
                     </div>
                 </div>
 

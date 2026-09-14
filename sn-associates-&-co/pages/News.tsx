@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { GoogleGenAI } from "@google/genai";
-import { Loader2, RefreshCw, Calendar, ExternalLink, AlertCircle, FileText, TrendingUp, Building2, Scale, User, MessageSquare, Send, CheckCircle, Sparkles, Bot } from 'lucide-react';
+import { Loader2, RefreshCw, Calendar, ExternalLink, AlertCircle, FileText, TrendingUp, Building2, Scale, User, MessageSquare, Send, CheckCircle, Sparkles, Bot, ArrowRight, BookOpen } from 'lucide-react';
 import { newsService, NewsItem } from '../services/newsService';
 
 const CACHE_KEY = 'sn_news_cache';
@@ -208,6 +209,30 @@ const News: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Dedicated Finance Blog Promo Banner */}
+        <div className="mb-8 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-blue-800/60">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold mb-2">
+              <Sparkles size={12} className="text-amber-400" />
+              <span>NEW: SN Associates Finance Blog</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              Looking for In-Depth Tax, GST & Startup Articles?
+            </h2>
+            <p className="text-xs text-slate-300 mt-1 max-w-xl">
+              Explore our dedicated Finance Blog with daily regulatory gazettes, Section 43B(h) guides, New vs Old Tax Regime analysis, and Angel Tax briefings.
+            </p>
+          </div>
+          <Link
+            to="/blog"
+            className="shrink-0 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-5 py-3 rounded-xl transition flex items-center gap-2 shadow-md shadow-blue-500/30 active:scale-95"
+          >
+            <BookOpen size={15} />
+            <span>Explore Finance Blog</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-[70%]">
             <div className="flex justify-between items-center mb-6">

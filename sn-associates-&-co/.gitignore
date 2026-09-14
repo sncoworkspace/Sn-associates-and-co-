@@ -45,6 +45,7 @@ dist-ssr/
 scratch/
 tmp/
 temp/
+.netlify/
 
 # Admin & Test Scripts
 create_admin.js

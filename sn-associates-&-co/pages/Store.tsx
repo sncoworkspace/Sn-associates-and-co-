@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-import { Star, ArrowRight, Loader2, BookOpen, Video } from 'lucide-react';
+import { Search, Filter, BookOpen, Video, Briefcase, Star, ArrowRight, Loader2 } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '../utils/imageAssets';
 import { Link } from 'react-router-dom';
 import { productDb } from '../services/localDb';
 import { Product } from '../types';
@@ -72,7 +72,12 @@ const Store: React.FC = () => {
                 className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col h-full shadow-sm"
               >
                 <div className="relative h-48 overflow-hidden bg-slate-100">
-                  <img src={product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <img 
+                    src={getProductImageUrl(product.id, product.title, product.image)} 
+                    alt={product.title} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                    onError={(e) => handleImageError(e, product.title, product.id)}
+                  />
                   <div className={`absolute top-3 left-3 px-2 py-1 rounded text-[9px] font-black uppercase shadow-lg text-white ${
                     product.type.toLowerCase().includes('course') ? 'bg-purple-600' : 
                     product.type.toLowerCase().includes('ebook') ? 'bg-green-600' : 'bg-amber-600'

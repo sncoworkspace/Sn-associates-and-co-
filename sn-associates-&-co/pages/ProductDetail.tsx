@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { productDb, cartDb } from '../services/localDb';
 import { Product } from '../types';
-import { Star, Globe, AlertCircle, Check, PlayCircle, FileText, Lock, ShieldCheck, ShoppingCart, Video, CheckCircle, Loader2, Layout } from 'lucide-react';
+import { Star, Globe, AlertCircle, Check, PlayCircle, FileText, Lock, ShieldCheck, ShoppingCart, Video, CheckCircle, Loader2, Layout, X, Play, Award, Sparkles } from 'lucide-react';
+import { getProductImageUrl, handleImageError } from '../utils/imageAssets';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +12,8 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTopic, setPreviewTopic] = useState<string>('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,6 +49,11 @@ const ProductDetail: React.FC = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  const openPreview = (topicName?: string) => {
+    setPreviewTopic(topicName || (product.content?.[0]?.items?.[0] || 'Introduction & Core Foundations'));
+    setShowPreviewModal(true);
+  };
+
   return (
     <div className="bg-white min-h-screen font-sans">
       {showToast && (
@@ -59,6 +67,75 @@ const ProductDetail: React.FC = () => {
                   Cart
               </button>
           </div>
+      )}
+
+      {/* Interactive Course / Resource Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="bg-slate-900 text-white p-6 flex justify-between items-start">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5 mb-1">
+                  <Sparkles size={14} /> Free Masterclass Preview
+                </span>
+                <h3 className="text-xl font-bold text-white">{product.title}</h3>
+                <p className="text-xs text-slate-400 mt-1">Lesson Topic: {previewTopic}</p>
+              </div>
+              <button 
+                onClick={() => setShowPreviewModal(false)} 
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Mock Video Player / Preview Card */}
+              <div className="relative rounded-2xl overflow-hidden bg-slate-900 aspect-video flex flex-col items-center justify-center text-center p-6 border border-slate-800 shadow-inner group">
+                <div className="w-16 h-16 rounded-full bg-blue-600/90 text-white flex items-center justify-center mb-3 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                  <Play size={28} className="ml-1 fill-white" />
+                </div>
+                <h4 className="text-white font-bold text-base mb-1">{previewTopic}</h4>
+                <p className="text-xs text-slate-300 max-w-md">
+                  Practical hands-on breakdown led by Senior CA faculty at SN Associates & Co. Includes real-world client case studies and compliance walk-throughs.
+                </p>
+                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-slate-200 text-[10px] px-2.5 py-1 rounded-full font-mono">
+                  06:45 Preview Snippet
+                </div>
+              </div>
+
+              {/* What you'll unlock */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">What you unlock in full access:</h5>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                  <li className="flex items-center gap-2"><Check size={14} className="text-green-600" /> All {product.content?.reduce((acc: number, c: any) => acc + (c.items?.length || 0), 0) || 'comprehensive'} modules & lessons</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-green-600" /> Downloadable templates & Excel sheets</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-green-600" /> Verified SNA Academy Certificate</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-green-600" /> 1-on-1 Q&A support from CA instructors</li>
+                </ul>
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    handleBuyNow();
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-600/20 text-center"
+                >
+                  Enroll Now for ₹{product.price}
+                </button>
+                <button
+                  onClick={() => setShowPreviewModal(false)}
+                  className="px-6 py-3 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition text-center"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="bg-slate-900 text-white py-16 relative overflow-hidden">
@@ -124,7 +201,12 @@ const ProductDetail: React.FC = () => {
                                    <span className="font-medium">{item}</span>
                                 </div>
                                 {idx === 0 && i === 0 ? (
-                                   <span className="text-[10px] text-blue-600 font-black uppercase bg-blue-50 px-2 py-0.5 rounded">Preview</span>
+                                   <button
+                                     onClick={() => openPreview(item)}
+                                     className="text-[11px] text-blue-600 font-bold uppercase bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full transition flex items-center gap-1 border border-blue-200"
+                                   >
+                                     <Play size={10} className="fill-blue-600" /> Preview
+                                   </button>
                                 ) : (
                                    <Lock size={14} className="text-slate-300" />
                                 )}
@@ -139,14 +221,26 @@ const ProductDetail: React.FC = () => {
 
         <div className="md:w-1/3 relative">
            <div className="sticky top-24 bg-white shadow-2xl border border-slate-200 rounded-[2.5rem] overflow-hidden group">
-              <div className="h-56 bg-slate-900 relative cursor-pointer overflow-hidden">
-                 <img src={product.image} alt="Preview" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
-                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition active:scale-95">
-                       <PlayCircle size={32} className="text-slate-900 ml-1" />
+              <div 
+                onClick={() => openPreview()}
+                className="h-56 bg-slate-900 relative cursor-pointer overflow-hidden group/thumb"
+                role="button"
+                aria-label="Watch course promo preview"
+              >
+                  <img 
+                    src={getProductImageUrl(product.id, product.title, product.image)} 
+                    alt={product.title} 
+                    onError={(e) => handleImageError(e, product.title, product.id)}
+                    className="w-full h-full object-cover opacity-90 group-hover/thumb:scale-105 transition-transform duration-700" 
+                  />
+                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/thumb:bg-black/40 transition">
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover/thumb:scale-110 transition active:scale-95">
+                       <PlayCircle size={32} className="text-blue-600 ml-1" />
                     </div>
                  </div>
-                 <div className="absolute bottom-6 left-0 right-0 text-center font-black text-white text-xs uppercase tracking-widest drop-shadow-lg">Watch Promo</div>
+                 <div className="absolute bottom-4 left-0 right-0 text-center font-black text-white text-xs uppercase tracking-widest drop-shadow-lg flex items-center justify-center gap-1.5">
+                   <Play size={12} className="fill-white" /> Watch Free Preview
+                 </div>
               </div>
 
               <div className="p-8">

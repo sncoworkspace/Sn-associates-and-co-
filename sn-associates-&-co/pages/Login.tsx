@@ -130,9 +130,9 @@ const Login: React.FC = () => {
                 <div className="bg-white px-10 py-16 text-center relative border-b border-slate-100">
                     <Link to="/" className="inline-block mb-8 transform hover:scale-105 transition-transform duration-500 ease-out">
                         <img
-                            src="https://image2url.com/images/1764921906714-ca9522a0-9679-4611-822e-55e3ef363a5a.png"
-                            alt="Logo"
-                            className="h-32 w-auto mx-auto object-contain"
+                            src="/logo.png"
+                            alt="SN Associates & Co Logo"
+                            className="h-28 w-auto mx-auto object-contain"
                         />
                     </Link>
                     <h1 className="text-slate-900 font-serif font-bold text-2xl tracking-tighter uppercase mb-2">SN ASSOCIATES & CO.</h1>

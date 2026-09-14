@@ -75,8 +75,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             
             <Link to="/" className="flex items-center gap-2 md:gap-3 group shrink-0">
                <img 
-                 src="https://image2url.com/images/1764921906714-ca9522a0-9679-4611-822e-55e3ef363a5a.png" 
-                 alt="SN Associates" 
+                 src="/logo.png" 
+                 alt="SN Associates & Co" 
                  className="h-8 md:h-10 w-auto object-contain"
                />
                <div className="flex flex-col justify-center">

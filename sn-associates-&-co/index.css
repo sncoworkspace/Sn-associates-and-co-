@@ -17,7 +17,26 @@
     h5,
     h6 {
         @apply tracking-tight font-extrabold text-slate-950;
-        /* Near black for headers */
+        /* Near black for headers on light backgrounds */
+    }
+
+    /* Prevent headings on dark backgrounds from becoming dark slate */
+    .text-white h1,
+    .text-white h2,
+    .text-white h3,
+    .text-white h4,
+    .text-white h5,
+    .text-white h6,
+    [class*="bg-slate-900"] h1,
+    [class*="bg-slate-900"] h2,
+    [class*="bg-slate-900"] h3,
+    [class*="bg-slate-950"] h1,
+    [class*="bg-slate-950"] h2,
+    [class*="bg-slate-950"] h3,
+    [class*="bg-blue-900"] h1,
+    [class*="bg-blue-950"] h1,
+    [class*="bg-black"] h1 {
+        color: #ffffff;
     }
 
     /* High-Contrast Input Visibility Fix */

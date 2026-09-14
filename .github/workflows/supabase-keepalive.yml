@@ -1,0 +1,33 @@
+name: Supabase Keep-Alive Cron
+
+# Runs every 3 days at 06:00 UTC to ensure Supabase Free Tier projects never pause
+on:
+  schedule:
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  keepalive:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Supabase Keep-Alive Healthcheck
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -f "sn-associates-&-co/scripts/keepAliveSupabase.js" ]; then
+            node sn-associates-&-co/scripts/keepAliveSupabase.js
+          elif [ -f "scripts/keepAliveSupabase.js" ]; then
+            node scripts/keepAliveSupabase.js
+          else
+            echo "Script not found, skipping."
+          fi

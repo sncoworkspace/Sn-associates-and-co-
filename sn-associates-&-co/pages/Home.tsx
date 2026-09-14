@@ -3,7 +3,78 @@ import React, { useState, useEffect } from 'react';
 import { settingsDb } from '../services/localDb';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, CheckCircle, FileText, Building, Scale, Briefcase, ChevronRight, Shield, Zap, Globe, PhoneCall, CheckCircle2, Star, BookOpen } from 'lucide-react';
+import { ArrowRight, CheckCircle, FileText, Building, Scale, Briefcase, ChevronRight, Shield, Zap, Globe, PhoneCall, CheckCircle2, Star, BookOpen, Sparkles, Calculator, MessageSquareQuote } from 'lucide-react';
+
+const routerSolutions = [
+  {
+    id: 'startup',
+    label: '🚀 Start a Business',
+    badge: 'Incorporate in 3-5 Days',
+    headline: 'Launch Your Venture with 100% Statutory Compliance',
+    description: 'From name approval to certificate of incorporation, PAN, TAN, GST, MSME, and zero-balance current account setup. Fast online execution with transparent fees.',
+    popularItems: ['Private Limited Company', 'LLP Registration', 'One Person Company (OPC)', 'GST & MSME Registration'],
+    ctaText: 'Start Incorporation',
+    ctaLink: '/book-consultation?service=Private%20Limited%20Company%20Registration',
+    highlight: 'Includes 1 Year Free Statutory Guidance'
+  },
+  {
+    id: 'tax',
+    label: '📊 File ITR & GST',
+    badge: 'Zero Penalty Guarantee',
+    headline: 'Strategic Tax Optimization, Audit & Error-Free Filing',
+    description: 'Maximize deductions legally under Old & New Tax Regimes. Monthly GST return filing, input tax credit reconciliation, and full notice representation.',
+    popularItems: ['Income Tax Return (ITR)', 'GST Monthly Return (GSTR-1/3B)', 'Tax Audit & Department Notice Help', 'TDS Return Filing'],
+    ctaText: 'Calculate Tax & File',
+    ctaLink: '/resources',
+    highlight: 'Average ₹45,000+ Annual Tax Saved per Client'
+  },
+  {
+    id: 'cfo',
+    label: '💼 Virtual CFO & Accounts',
+    badge: 'For Startups & MSMEs',
+    headline: 'Executive Financial Leadership at a Fraction of the Cost',
+    description: 'Full-stack bookkeeping, payroll, monthly investor MIS reports, cash flow forecasting, and statutory compliance handled by seasoned Chartered Accountants.',
+    popularItems: ['Daily Bookkeeping & Tally/Zoho', 'Payroll & Labour Law', 'Investor MIS Reports', 'Business Valuation'],
+    ctaText: 'Book Free CFO Call',
+    ctaLink: '/book-consultation?service=Virtual%20CFO%20Services',
+    highlight: 'Dedicated Senior CA Partner Assigned'
+  },
+  {
+    id: 'academy',
+    label: '🎓 SNAC Academy',
+    badge: 'Practical Mentorship',
+    headline: 'Master Real-World GST, ITR & Accounting Practice',
+    description: 'Step into real-world tax and audit practice with live client files, software training, industry certification, and internship placement assistance.',
+    popularItems: ['GST Practical Mastercourse', 'Income Tax Filing Mastery', 'Corporate Accounting & ROC', 'Live Internship Program'],
+    ctaText: 'Explore Academy Courses',
+    ctaLink: '/snac-academy',
+    highlight: '1,200+ Students & Professionals Trained'
+  }
+];
+
+const homeTestimonials = [
+  {
+    quote: "SN Associates & Co incorporated our tech startup in just 4 business days and set up our entire GST and MSME structure seamlessly. Their CA team is always responsive.",
+    author: "Vikramaditya S.",
+    role: "Founder & CEO, TechMatrix Labs Bangalore",
+    rating: 5,
+    tag: "Company Incorporation & GST"
+  },
+  {
+    quote: "Their Virtual CFO and tax planning saved us over ₹3.8 Lakhs in legitimate deductions this financial year. Timely MIS reports have made our board meetings smooth.",
+    author: "Deepika Raman",
+    role: "Managing Director, Pristine Health Ventures",
+    rating: 5,
+    tag: "Virtual CFO & Tax Advisory"
+  },
+  {
+    quote: "The practical training at SNAC Academy transformed my career. Within 3 weeks of finishing the GST Mastercourse, I landed an accounting role at a tier-1 firm.",
+    author: "Naveen Kumar",
+    role: "Alumnus, SNAC Academy 2024 Batch",
+    rating: 5,
+    tag: "SNAC Academy"
+  }
+];
 
 const heroImages = [
   "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1920", // Calculator & Financial Documents
@@ -76,6 +147,7 @@ const serviceCategories = [
 const Home: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [siteSettings, setSiteSettings] = useState(settingsDb.getSettings());
+  const [activeRouterTab, setActiveRouterTab] = useState(0);
 
   useEffect(() => {
     const handleSettingsUpdate = () => {
@@ -239,7 +311,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* --- 3D STATS BAR --- */}
-      <section className="relative z-20 -mt-10 mb-20">
+      <section className="relative z-20 -mt-10 mb-12">
         <div className="container mx-auto px-4">
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -257,6 +329,94 @@ const Home: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- INTERACTIVE SOLUTION ROUTER / FAST NAVIGATOR --- */}
+      <section className="relative z-20 pb-16">
+        <div className="container mx-auto px-4">
+          <div className="bg-slate-800/80 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-6 md:p-10 shadow-2xl">
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <span className="text-cyan-400 font-black tracking-widest uppercase text-xs mb-2 inline-flex items-center gap-1.5 bg-cyan-950/60 border border-cyan-800/60 px-3.5 py-1.5 rounded-full">
+                <Sparkles size={13} /> Interactive Solution Router
+              </span>
+              <h3 className="text-2xl md:text-3xl font-bold text-white font-serif mt-2">
+                What would you like to achieve today?
+              </h3>
+              <p className="text-slate-400 text-xs md:text-sm mt-1">
+                Select your objective for instant execution timelines, statutory checklists, and free advisory.
+              </p>
+            </div>
+
+            {/* Router Tabs */}
+            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8">
+              {routerSolutions.map((sol, idx) => (
+                <button
+                  key={sol.id}
+                  onClick={() => setActiveRouterTab(idx)}
+                  className={`px-4 md:px-6 py-3 rounded-2xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
+                    activeRouterTab === idx
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+                      : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-700/50'
+                  }`}
+                >
+                  <span>{sol.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Active Router Solution Card */}
+            {(() => {
+              const sol = routerSolutions[activeRouterTab];
+              return (
+                <div className="bg-slate-900/90 border border-slate-700 rounded-2xl p-6 md:p-8 animate-fadeIn flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
+                        {sol.badge}
+                      </span>
+                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <CheckCircle size={13} className="text-emerald-400" />
+                        <span>{sol.highlight}</span>
+                      </span>
+                    </div>
+
+                    <h4 className="text-xl md:text-2xl font-bold text-white mb-2 font-serif">
+                      {sol.headline}
+                    </h4>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                      {sol.description}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-slate-400 mr-2">Key Highlights:</span>
+                      {sol.popularItems.map((item) => (
+                        <span key={item} className="text-xs bg-slate-800 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl font-medium">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 min-w-[220px]">
+                    <Link
+                      to={sol.ctaLink}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs md:text-sm py-4 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 text-center"
+                    >
+                      <span>{sol.ctaText}</span>
+                      <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/services"
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-3 px-6 rounded-xl flex items-center justify-center gap-1.5 transition border border-slate-700 text-center"
+                    >
+                      <span>View All 50+ Services</span>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
@@ -385,6 +545,67 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* --- CLIENT TESTIMONIALS & TRUST SHOWCASE --- */}
+      <section className="py-24 relative bg-slate-950/60 border-t border-white/5">
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+              <Star size={14} className="fill-amber-400" />
+              <span>Verified Client Experiences</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-white font-serif tracking-tight">
+              Trusted by 5,000+ Founders, MSMEs & Professionals
+            </h2>
+            <p className="text-slate-400 text-sm md:text-base mt-3">
+              Real results from Indian enterprises and ambitious learners who rely on SN Associates & Co.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {homeTestimonials.map((t, idx) => (
+              <div key={idx} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between hover:border-blue-500/50 hover:shadow-2xl transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex text-amber-400 gap-1">
+                      {[...Array(t.rating)].map((_, i) => (
+                        <Star key={i} size={14} fill="currentColor" />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-blue-950/80 text-blue-400 border border-blue-800/40 px-2.5 py-1 rounded-full">
+                      {t.tag}
+                    </span>
+                  </div>
+
+                  <p className="text-slate-300 text-sm leading-relaxed italic mb-6">
+                    "{t.quote}"
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-md">
+                    {t.author.charAt(0)}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-white text-sm">{t.author}</h5>
+                    <p className="text-slate-400 text-xs">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link
+              to="/testimonials"
+              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-sm tracking-wide group"
+            >
+              <span>Read 40+ more verified client stories</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* --- NEON CTA SECTION --- */}
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-blue-900/20"></div>
@@ -395,13 +616,13 @@ const Home: React.FC = () => {
             <h2 className="text-4xl font-bold text-white mb-6">Ready to Scale?</h2>
             <p className="text-blue-200 mb-10 text-lg">
               Join thousands of businesses who trust us with their compliance.
-              <br />First consultation is on us.
+              <br />Your first 15-minute strategy consultation is completely complimentary.
             </p>
             <Link
-              to="/contact"
+              to="/book-consultation"
               className="inline-block bg-white text-blue-900 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)]"
             >
-              Get Started Today
+              Book Free Strategy Call
             </Link>
           </div>
         </div>
