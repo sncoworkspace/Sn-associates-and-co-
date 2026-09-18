@@ -3,151 +3,170 @@ import React, { useState, useEffect } from 'react';
 import { settingsDb } from '../services/localDb';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, CheckCircle, FileText, Building, Scale, Briefcase, ChevronRight, Shield, Zap, Globe, PhoneCall, CheckCircle2, Star, BookOpen, Sparkles, Calculator, MessageSquareQuote } from 'lucide-react';
+import { ArrowRight, CheckCircle, FileText, Building, Scale, Briefcase, ChevronRight, Shield, Zap, Globe, PhoneCall, CheckCircle2, Star, BookOpen, HelpCircle, ChevronDown, ShieldCheck, Award } from 'lucide-react';
 
-const routerSolutions = [
+const faqs = [
   {
-    id: 'startup',
-    label: '🚀 Start a Business',
-    badge: 'Incorporate in 3-5 Days',
-    headline: 'Launch Your Venture with 100% Statutory Compliance',
-    description: 'From name approval to certificate of incorporation, PAN, TAN, GST, MSME, and zero-balance current account setup. Fast online execution with transparent fees.',
-    popularItems: ['Private Limited Company', 'LLP Registration', 'One Person Company (OPC)', 'GST & MSME Registration'],
-    ctaText: 'Start Incorporation',
-    ctaLink: '/book-consultation?service=Private%20Limited%20Company%20Registration',
-    highlight: 'Includes 1 Year Free Statutory Guidance'
+    question: "What legal and tax services does SN Associates & Co provide in Bangalore?",
+    answer: "SN Associates & Co provides comprehensive advisory services including Business Entity Incorporation (Private Limited, LLP, OPC, Partnership), GST Registration & Monthly Filing, Income Tax Returns (ITR), Statutory & Tax Audits, Startup India Registration, Virtual CFO services, and Corporate Legal Drafting."
   },
   {
-    id: 'tax',
-    label: '📊 File ITR & GST',
-    badge: 'Zero Penalty Guarantee',
-    headline: 'Strategic Tax Optimization, Audit & Error-Free Filing',
-    description: 'Maximize deductions legally under Old & New Tax Regimes. Monthly GST return filing, input tax credit reconciliation, and full notice representation.',
-    popularItems: ['Income Tax Return (ITR)', 'GST Monthly Return (GSTR-1/3B)', 'Tax Audit & Department Notice Help', 'TDS Return Filing'],
-    ctaText: 'Calculate Tax & File',
-    ctaLink: '/resources',
-    highlight: 'Average ₹45,000+ Annual Tax Saved per Client'
+    question: "Where is the SN Associates & Co office located in Bangalore?",
+    answer: "Our head office is centrally located at #1, 1st Floor, Electronic City Main Road, Bettadasanapura, Bangalore, Karnataka - 560100. We serve clients across Electronic City Phase 1 & 2, HSR Layout, Koramangala, Whitefield, and nationwide across India."
   },
   {
-    id: 'cfo',
-    label: '💼 Virtual CFO & Accounts',
-    badge: 'For Startups & MSMEs',
-    headline: 'Executive Financial Leadership at a Fraction of the Cost',
-    description: 'Full-stack bookkeeping, payroll, monthly investor MIS reports, cash flow forecasting, and statutory compliance handled by seasoned Chartered Accountants.',
-    popularItems: ['Daily Bookkeeping & Tally/Zoho', 'Payroll & Labour Law', 'Investor MIS Reports', 'Business Valuation'],
-    ctaText: 'Book Free CFO Call',
-    ctaLink: '/book-consultation?service=Virtual%20CFO%20Services',
-    highlight: 'Dedicated Senior CA Partner Assigned'
+    question: "How can I book an in-person or virtual consultation with an expert?",
+    answer: "You can easily schedule a consultation online through our Book Consultation page (/book-consultation), contact our advisory desk directly at +91 7406581456, or chat with our team via WhatsApp for immediate support."
   },
   {
-    id: 'academy',
-    label: '🎓 SNAC Academy',
-    badge: 'Practical Mentorship',
-    headline: 'Master Real-World GST, ITR & Accounting Practice',
-    description: 'Step into real-world tax and audit practice with live client files, software training, industry certification, and internship placement assistance.',
-    popularItems: ['GST Practical Mastercourse', 'Income Tax Filing Mastery', 'Corporate Accounting & ROC', 'Live Internship Program'],
-    ctaText: 'Explore Academy Courses',
-    ctaLink: '/snac-academy',
-    highlight: '1,200+ Students & Professionals Trained'
+    question: "What documents are required to register a Private Limited Company or LLP?",
+    answer: "The primary documents needed are PAN cards, Aadhaar cards/passports, and photographs of directors/partners, bank statements as address proof, and electricity bill or NOC for the registered office address in Bangalore. Our team handles name approval, digital signatures (DSC), DIN, and MOA/AOA drafting."
+  },
+  {
+    question: "Do you offer monthly GST filing and annual ROC compliance packages for startups?",
+    answer: "Yes, we offer complete end-to-end annual retainers for startups and MSMEs covering monthly GSTR-1 and GSTR-3B filings, quarterly TDS returns, annual ROC filings (AOC-4 & MGT-7), statutory book-keeping, and board meeting resolutions."
   }
 ];
 
-const homeTestimonials = [
+const heroSlides = [
   {
-    quote: "SN Associates & Co incorporated our tech startup in just 4 business days and set up our entire GST and MSME structure seamlessly. Their CA team is always responsive.",
-    author: "Vikramaditya S.",
-    role: "Founder & CEO, TechMatrix Labs Bangalore",
-    rating: 5,
-    tag: "Company Incorporation & GST"
+    desktopUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1920",
+    mobileUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=800",
+    alt: "SN Associates & Co Tax & Legal Financial Planning Documents in Bangalore"
   },
   {
-    quote: "Their Virtual CFO and tax planning saved us over ₹3.8 Lakhs in legitimate deductions this financial year. Timely MIS reports have made our board meetings smooth.",
-    author: "Deepika Raman",
-    role: "Managing Director, Pristine Health Ventures",
-    rating: 5,
-    tag: "Virtual CFO & Tax Advisory"
+    desktopUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=1920",
+    mobileUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800",
+    alt: "Corporate Law, Statutory Compliance & Legal Advisory Bangalore"
   },
   {
-    quote: "The practical training at SNAC Academy transformed my career. Within 3 weeks of finishing the GST Mastercourse, I landed an accounting role at a tier-1 firm.",
-    author: "Naveen Kumar",
-    role: "Alumnus, SNAC Academy 2024 Batch",
-    rating: 5,
-    tag: "SNAC Academy"
+    desktopUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1920",
+    mobileUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
+    alt: "Auditing, Financial Planning and Bookkeeping Experts Bangalore"
+  },
+  {
+    desktopUrl: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=1920",
+    mobileUrl: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=800",
+    alt: "Client Business Consultation with Tax & Legal Advisors"
   }
-];
-
-const heroImages = [
-  "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1920", // Calculator & Financial Documents
-  "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=1920", // Legal Gavel & Books
-  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1920", // Auditing/Planning on Laptop
-  "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=1920"  // Client Meeting
 ];
 
 const serviceCategories = [
   {
     icon: Building,
     title: "1. Business Entity Incorporation & Registration",
+    path: "/services/incorporation",
     items: [
-      "Proprietorship Registration", "Partnership Firm Registration", "LLP Registration",
-      "Private Limited Company Registration", "One Person Company (OPC)",
+      "Private Limited Company Registration", "Limited Liability Partnership (LLP)",
+      "One Person Company (OPC)", "Partnership & Proprietorship Setup",
       "Trust, Society & Section 8 Company", "Nidhi Company Registration", "Indian & Foreign Subsidiary Setup"
     ],
-    color: "blue"
+    bgGrad: "from-blue-600 to-blue-400",
+    hoverGlow: "from-blue-500/10",
+    textAccent: "text-blue-400"
   },
   {
     icon: FileText,
     title: "2. Post-Incorporation & Business Registrations",
+    path: "/services/gst",
     items: [
       "PAN & TAN Application", "GST Registration & Amendments", "MSME (Udyam) Registration",
       "Shop & Establishment License", "PF & ESI Registration", "Trade & FSSAI (Food) License",
       "Startup India Registration"
     ],
-    color: "cyan"
+    bgGrad: "from-cyan-600 to-cyan-400",
+    hoverGlow: "from-cyan-500/10",
+    textAccent: "text-cyan-400"
   },
   {
     icon: Scale,
     title: "3. Tax & Legal Compliance Services",
+    path: "/services/tax",
     items: [
-      "Income Tax Advisory & ITR Filing", "Income Tax & GST Audit", "E-TDS Filing",
-      "Representation & Appeals", "ROC Annual Filings", "FDI & FEMA Compliance",
-      "Share Transfer & Reporting"
+      "Income Tax Advisory & ITR Filing", "Corporate Tax & Transfer Pricing",
+      "Income Tax & GST Audit", "E-TDS / TCS Filing & Rectification",
+      "Representation & Appeals", "FDI & FEMA Compliance"
     ],
-    color: "purple"
+    bgGrad: "from-purple-600 to-purple-400",
+    hoverGlow: "from-purple-500/10",
+    textAccent: "text-purple-400"
   },
   {
     icon: Briefcase,
     title: "4. Outsourcing, Accounting & CFO Services",
+    path: "/services/accounting",
     items: [
-      "Virtual CFO Services", "Outsourced Accounting & Bookkeeping", "Payroll & Labour Law",
-      "CMA Data & Project Reports", "Business Valuation", "Due Diligence Services",
-      "Registered Valuer Services"
+      "Virtual CFO Services & Strategy", "Outsourced Accounting & Bookkeeping",
+      "Payroll & Labour Law Compliance", "CMA Data & Project Reports",
+      "Business Valuation & Due Diligence", "Registered Valuer Services"
     ],
-    color: "indigo"
+    bgGrad: "from-indigo-600 to-indigo-400",
+    hoverGlow: "from-indigo-500/10",
+    textAccent: "text-indigo-400"
+  },
+  {
+    icon: ShieldCheck,
+    title: "5. Corporate Governance & ROC Compliances",
+    path: "/services/roc",
+    items: [
+      "AOC-4 & MGT-7 Annual Filing", "Director KYC & DIN (DIR-3 KYC)",
+      "Change in Directors / Registered Office", "Increase in Authorised Capital",
+      "Secretarial Audit Certification", "Company Strike-Off (STK-2)"
+    ],
+    bgGrad: "from-rose-600 to-rose-400",
+    hoverGlow: "from-rose-500/10",
+    textAccent: "text-rose-400"
+  },
+  {
+    icon: Award,
+    title: "6. Trademark & Intellectual Property (IP)",
+    path: "/services/trademark",
+    items: [
+      "Trademark Search & Brand Filing", "Trademark Objection Reply",
+      "Trademark Hearing Representation", "Copyright Registration",
+      "Patent Search & Advisory", "Design Registration"
+    ],
+    bgGrad: "from-amber-600 to-amber-400",
+    hoverGlow: "from-amber-500/10",
+    textAccent: "text-amber-400"
   },
   {
     icon: Zap,
-    title: "5. Digital, Technology & Growth Services",
+    title: "7. Digital, Technology & Growth Services",
+    path: "/services",
     items: [
-      "Website Design & Development", "SEO-Optimized Business Websites", "Digital Marketing & Promotion",
-      "Social Media Marketing (SMM)", "Google Ads Campaigns", "Lead Generation & Branding"
+      "Website Design & Development", "SEO-Optimized Business Websites",
+      "Digital Marketing & Promotion", "Social Media Marketing (SMM)",
+      "Google Ads Campaigns", "Lead Generation & Branding"
     ],
-    color: "emerald"
+    bgGrad: "from-emerald-600 to-emerald-400",
+    hoverGlow: "from-emerald-500/10",
+    textAccent: "text-emerald-400"
   },
   {
     icon: BookOpen,
-    title: "6. SNAC Academy: Professional Training",
+    title: "8. SNAC Academy: Professional Training",
+    path: "/academy",
     items: [
-      "GST Master Course (Practical)", "ITR Master Course", "Compliance Guides & Toolkits",
-      "Internship Programs", "Business Strategy E-Books"
+      "GST Master Course (Practical)", "ITR Master Course & E-filing",
+      "Compliance Guides & Toolkits", "Internship Programs",
+      "Business Strategy E-Books"
     ],
-    color: "amber"
+    bgGrad: "from-sky-600 to-sky-400",
+    hoverGlow: "from-sky-500/10",
+    textAccent: "text-sky-400"
   }
 ];
 
 const Home: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [siteSettings, setSiteSettings] = useState(settingsDb.getSettings());
-  const [activeRouterTab, setActiveRouterTab] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  const toggleFaq = (idx: number) => {
+    setOpenFaqIndex(prev => prev === idx ? null : idx);
+  };
 
   useEffect(() => {
     const handleSettingsUpdate = () => {
@@ -157,45 +176,79 @@ const Home: React.FC = () => {
     return () => window.removeEventListener('site-settings-updated', handleSettingsUpdate);
   }, []);
 
-  // Slider Logic: Change image every 4 seconds
+  // Slider Logic: Change image every 5 seconds, respecting reduced motion, tab visibility, and user pause
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || isPaused) return;
+
     const timer = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 4000);
+      if (document.visibilityState === 'visible') {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroSlides.length);
+      }
+    }, 5000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   return (
     <div className="flex flex-col bg-slate-900 min-h-screen text-slate-100 font-sans selection:bg-blue-500 selection:text-white relative">
       <Helmet>
-        <title>SN Associates & Co | Chartered Accountants in Bangalore</title>
-        <meta name="description" content="Leading Chartered Accountants in Bangalore providing expert Tax, Audit, and Advisory services. Reliable financial solutions for businesses and individuals." />
+        <title>SN Associates & Co | Tax, Legal & Business Advisory Experts Bangalore</title>
+        <meta name="description" content="Leading Tax, Legal, Compliance & Business Advisory firm in Electronic City, Bangalore since 2015. Expert GST filing, ITR, Company Registration & Audits." />
+        <link rel="canonical" href="https://snassociatesandco.com/" />
+        <meta property="og:title" content="SN Associates & Co | Tax, Legal & Business Advisory Experts Bangalore" />
+        <meta property="og:description" content="Leading Tax, Legal, Compliance & Business Advisory firm in Electronic City, Bangalore since 2015. Expert GST filing, ITR, Company Registration & Audits." />
+        <meta property="og:url" content="https://snassociatesandco.com/" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "ProfessionalService",
+            "@type": ["AccountingService", "LegalService"],
+            "@id": "https://snassociatesandco.com/#organization",
             "name": "SN Associates & Co",
             "url": "https://snassociatesandco.com/",
+            "telephone": "+917406581456",
+            "email": "audit.snassociates@gmail.com",
+            "priceRange": "₹₹",
             "address": {
               "@type": "PostalAddress",
-              "addressLocality": "Electronic City, Bangalore",
-              "addressRegion": "KA",
+              "streetAddress": "#1, 1st Floor, Electronic City Main Road, Bettadasanapura",
+              "addressLocality": "Bangalore",
+              "postalCode": "560100",
+              "addressRegion": "Karnataka",
               "addressCountry": "IN"
             },
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://snassociatesandco.com/search?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 12.8396,
+              "longitude": 77.6775
+            },
+            "areaServed": [
+              { "@type": "City", "name": "Bangalore" },
+              { "@type": "AdministrativeArea", "name": "Karnataka" },
+              { "@type": "Country", "name": "India" }
+            ]
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqs.map(faq => ({
+              "@type": "Question",
+              "name": faq.question,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+              }
+            }))
           })}
         </script>
       </Helmet>
 
-      {/* Floating Book Call Button (Home Page Specific) */}
+      {/* Floating Book Call Button (Home Page Specific - Desktop Only) */}
       <Link
         to="/book-consultation"
-        className="fixed bottom-24 left-6 z-40 bg-amber-400 hover:bg-amber-500 text-slate-900 p-4 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] transition-all duration-300 hover:scale-110 flex items-center gap-2 group border border-amber-300 animate-bounce-slow"
+        className="hidden md:flex fixed bottom-24 left-6 z-40 bg-amber-400 hover:bg-amber-500 text-slate-900 p-4 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.4)] transition-all duration-300 hover:scale-110 items-center gap-2 group border border-amber-300 animate-bounce-slow"
         aria-label="Book a Call"
       >
         <PhoneCall size={24} className="fill-slate-900/20" />
@@ -205,24 +258,40 @@ const Home: React.FC = () => {
       </Link>
 
       {/* --- 3D HERO SECTION WITH SLIDER --- */}
-      <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+      <section
+        className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden"
+        aria-roledescription="carousel"
+        aria-label="Firm Overview & Key Services"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
 
         {/* Background Slider */}
-        {heroImages.map((img, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+        {heroSlides.map((slide, index) => {
+          const isCurrent = index === currentImageIndex;
+          return (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                isCurrent ? 'opacity-100 z-0' : 'opacity-0 -z-10'
               }`}
-          >
-            <img
-              src={img}
-              alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            {/* Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-slate-900/40 backdrop-blur-[2px]"></div>
-          </div>
-        ))}
+              aria-hidden={!isCurrent}
+            >
+              <img
+                src={slide.desktopUrl}
+                srcSet={`${slide.mobileUrl} 800w, ${slide.desktopUrl} 1920w`}
+                sizes="100vw"
+                alt={slide.alt}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                decoding={index === 0 ? 'sync' : 'async'}
+                className="w-full h-full object-cover"
+              />
+              {/* Gradient Overlay for Text Readability */}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-slate-900/40 backdrop-blur-[2px]"></div>
+            </div>
+          );
+        })}
 
         {/* Floating Abstract Shapes for 3D Depth */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -294,16 +363,31 @@ const Home: React.FC = () => {
             </div>
 
             {/* Slider Indicators */}
-            <div className="mt-12 flex items-center justify-center md:justify-start gap-3">
-              {heroImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`h-1 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'w-8 bg-blue-400' : 'w-2 bg-slate-600 hover:bg-slate-500'
-                    }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
+            <div className="mt-12 flex items-center justify-center md:justify-start gap-3" role="tablist" aria-label="Hero slide navigation">
+              {heroSlides.map((slide, idx) => {
+                const isActive = idx === currentImageIndex;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(idx)}
+                    onFocus={() => setIsPaused(true)}
+                    onBlur={() => setIsPaused(false)}
+                    className="group py-2 px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded"
+                    aria-label={`Go to slide ${idx + 1}: ${slide.alt}`}
+                    aria-selected={isActive}
+                    role="tab"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all duration-300 ${
+                        isActive
+                          ? 'w-8 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]'
+                          : 'w-2.5 bg-slate-600 group-hover:bg-slate-400'
+                      }`}
+                    />
+                  </button>
+                );
+              })}
             </div>
 
           </div>
@@ -311,7 +395,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* --- 3D STATS BAR --- */}
-      <section className="relative z-20 -mt-10 mb-12">
+      <section className="relative z-20 -mt-10 mb-20">
         <div className="container mx-auto px-4">
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -333,94 +417,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- INTERACTIVE SOLUTION ROUTER / FAST NAVIGATOR --- */}
-      <section className="relative z-20 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="bg-slate-800/80 backdrop-blur-2xl border border-slate-700/80 rounded-3xl p-6 md:p-10 shadow-2xl">
-            <div className="text-center max-w-2xl mx-auto mb-8">
-              <span className="text-cyan-400 font-black tracking-widest uppercase text-xs mb-2 inline-flex items-center gap-1.5 bg-cyan-950/60 border border-cyan-800/60 px-3.5 py-1.5 rounded-full">
-                <Sparkles size={13} /> Interactive Solution Router
-              </span>
-              <h3 className="text-2xl md:text-3xl font-bold text-white font-serif mt-2">
-                What would you like to achieve today?
-              </h3>
-              <p className="text-slate-400 text-xs md:text-sm mt-1">
-                Select your objective for instant execution timelines, statutory checklists, and free advisory.
-              </p>
-            </div>
-
-            {/* Router Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8">
-              {routerSolutions.map((sol, idx) => (
-                <button
-                  key={sol.id}
-                  onClick={() => setActiveRouterTab(idx)}
-                  className={`px-4 md:px-6 py-3 rounded-2xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
-                    activeRouterTab === idx
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-105'
-                      : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-700/50'
-                  }`}
-                >
-                  <span>{sol.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Active Router Solution Card */}
-            {(() => {
-              const sol = routerSolutions[activeRouterTab];
-              return (
-                <div className="bg-slate-900/90 border border-slate-700 rounded-2xl p-6 md:p-8 animate-fadeIn flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                  <div className="max-w-2xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
-                        {sol.badge}
-                      </span>
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <CheckCircle size={13} className="text-emerald-400" />
-                        <span>{sol.highlight}</span>
-                      </span>
-                    </div>
-
-                    <h4 className="text-xl md:text-2xl font-bold text-white mb-2 font-serif">
-                      {sol.headline}
-                    </h4>
-                    <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                      {sol.description}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-bold text-slate-400 mr-2">Key Highlights:</span>
-                      {sol.popularItems.map((item) => (
-                        <span key={item} className="text-xs bg-slate-800 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl font-medium">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 min-w-[220px]">
-                    <Link
-                      to={sol.ctaLink}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs md:text-sm py-4 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95 text-center"
-                    >
-                      <span>{sol.ctaText}</span>
-                      <ArrowRight size={16} />
-                    </Link>
-                    <Link
-                      to="/services"
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-3 px-6 rounded-xl flex items-center justify-center gap-1.5 transition border border-slate-700 text-center"
-                    >
-                      <span>View All 50+ Services</span>
-                    </Link>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
-      </section>
-
       {/* --- HOLOGRAPHIC SERVICES SECTION --- */}
       <section className="py-20 relative">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-b from-blue-900/20 to-transparent pointer-events-none"></div>
@@ -436,34 +432,36 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {serviceCategories.map((cat, idx) => (
-              <div key={idx} className="group relative bg-slate-800/40 backdrop-blur-md border border-white/5 rounded-3xl p-8 hover:bg-slate-800/60 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                <div className={`absolute inset-0 bg-gradient-to-br from-${cat.color}-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl`}></div>
+              <div key={idx} className="group relative bg-slate-800/40 backdrop-blur-md border border-white/5 rounded-3xl p-6 hover:bg-slate-800/60 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col justify-between">
+                <div className={`absolute inset-0 bg-gradient-to-br ${cat.hoverGlow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none`}></div>
 
-                <div className={`w-14 h-14 bg-gradient-to-br from-${cat.color}-600 to-${cat.color}-400 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
-                  <cat.icon size={28} />
+                <div>
+                  <div className={`w-12 h-12 bg-gradient-to-br ${cat.bgGrad} rounded-2xl flex items-center justify-center text-white mb-5 shadow-lg group-hover:rotate-6 transition-transform`}>
+                    <cat.icon size={24} />
+                  </div>
+
+                  <h3 className="text-lg font-bold text-white mb-3 group-hover:text-blue-300 transition-colors leading-snug">{cat.title}</h3>
+                  <ul className="space-y-2 mb-6">
+                    {cat.items.slice(0, 4).map((item, i) => (
+                      <li key={i} className="group/item">
+                        <Link to={cat.path} className="flex items-start gap-2 text-xs text-slate-200 hover:text-blue-400 transition-colors">
+                          <ChevronRight size={12} className="mt-1 text-blue-500 shrink-0 group-hover/item:translate-x-1 transition-transform" />
+                          <span>{item}</span>
+                        </Link>
+                      </li>
+                    ))}
+                    {cat.items.length > 4 && (
+                      <li className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-5 mt-2">
+                        + {cat.items.length - 4} More Services
+                      </li>
+                    )}
+                  </ul>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors">{cat.title}</h3>
-                <ul className="space-y-2 mb-8">
-                  {cat.items.slice(0, 4).map((item, i) => (
-                    <li key={i} className="group/item">
-                      <Link to="/services" className="flex items-start gap-2 text-xs text-slate-200 hover:text-blue-400 transition-colors">
-                        <ChevronRight size={12} className="mt-1 text-blue-500 shrink-0 group-hover/item:translate-x-1 transition-transform" />
-                        <span>{item}</span>
-                      </Link>
-                    </li>
-                  ))}
-                  {cat.items.length > 4 && (
-                    <li className="text-[10px] text-slate-300 font-bold uppercase tracking-widest pl-5 mt-2">
-                      + {cat.items.length - 4} More Specialized Services
-                    </li>
-                  )}
-                </ul>
-
-                <Link to="/services" className={`inline-flex items-center gap-2 text-${cat.color}-400 font-bold uppercase text-[10px] tracking-widest hover:gap-4 transition-all`}>
-                  Expand Domain <ChevronRight size={14} />
+                <Link to={cat.path} className={`inline-flex items-center gap-2 ${cat.textAccent} font-bold uppercase text-[10px] tracking-widest hover:gap-4 transition-all pt-3 border-t border-white/5`}>
+                  Explore Domain <ChevronRight size={14} />
                 </Link>
               </div>
             ))}
@@ -545,63 +543,48 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- CLIENT TESTIMONIALS & TRUST SHOWCASE --- */}
-      <section className="py-24 relative bg-slate-950/60 border-t border-white/5">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
-              <Star size={14} className="fill-amber-400" />
-              <span>Verified Client Experiences</span>
+      {/* --- FAQ SECTION WITH ACCORDION & FAQPAGE SCHEMA --- */}
+      <section className="py-24 bg-slate-950/60 border-t border-b border-white/5 relative">
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-wider uppercase mb-4">
+              <HelpCircle size={14} /> Frequently Asked Questions
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-white font-serif tracking-tight">
-              Trusted by 5,000+ Founders, MSMEs & Professionals
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Frequently Asked <span className="text-blue-500">Questions</span>
             </h2>
-            <p className="text-slate-400 text-sm md:text-base mt-3">
-              Real results from Indian enterprises and ambitious learners who rely on SN Associates & Co.
+            <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
+              Clear, practical answers about our business incorporation, tax filing, and legal advisory services in Electronic City, Bangalore.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {homeTestimonials.map((t, idx) => (
-              <div key={idx} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between hover:border-blue-500/50 hover:shadow-2xl transition-all duration-300">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex text-amber-400 gap-1">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} size={14} fill="currentColor" />
-                      ))}
+          <div className="space-y-4">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaqIndex === index;
+              return (
+                <div
+                  key={index}
+                  className="rounded-2xl bg-slate-900/80 border border-white/10 hover:border-blue-500/40 transition-colors overflow-hidden shadow-lg"
+                >
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-4 font-semibold text-white hover:text-blue-400 transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="text-base md:text-lg">{faq.question}</span>
+                    <ChevronDown
+                      size={20}
+                      className={`text-blue-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-6 pb-6 text-slate-300 text-sm md:text-base leading-relaxed border-t border-white/5 pt-4">
+                      {faq.answer}
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-blue-950/80 text-blue-400 border border-blue-800/40 px-2.5 py-1 rounded-full">
-                      {t.tag}
-                    </span>
-                  </div>
-
-                  <p className="text-slate-300 text-sm leading-relaxed italic mb-6">
-                    "{t.quote}"
-                  </p>
+                  )}
                 </div>
-
-                <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-md">
-                    {t.author.charAt(0)}
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-white text-sm">{t.author}</h5>
-                    <p className="text-slate-400 text-xs">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/testimonials"
-              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-sm tracking-wide group"
-            >
-              <span>Read 40+ more verified client stories</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -616,13 +599,13 @@ const Home: React.FC = () => {
             <h2 className="text-4xl font-bold text-white mb-6">Ready to Scale?</h2>
             <p className="text-blue-200 mb-10 text-lg">
               Join thousands of businesses who trust us with their compliance.
-              <br />Your first 15-minute strategy consultation is completely complimentary.
+              <br />First consultation is on us.
             </p>
             <Link
-              to="/book-consultation"
+              to="/contact"
               className="inline-block bg-white text-blue-900 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-50 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)]"
             >
-              Book Free Strategy Call
+              Get Started Today
             </Link>
           </div>
         </div>

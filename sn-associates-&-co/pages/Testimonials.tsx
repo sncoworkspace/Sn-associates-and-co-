@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { TestimonialItem } from '../types';
 import { Quote, Star, ExternalLink, MessageSquare } from 'lucide-react';
 
@@ -53,10 +54,47 @@ const testimonials: EnhancedTestimonial[] = [
 ];
 
 const Testimonials: React.FC = () => {
-  const googleReviewUrl = "https://www.google.com/search?q=SN+Associates+and+Co+Electronic+City+Reviews";
+  const googleReviewUrl = "https://www.google.com/search?q=SN+Associates+%26+Co+Electronic+City+Bangalore+Reviews#lrd=0x3bae6ca38612140d:0x2289f666b6c0817c,3,,,";
 
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>Client Testimonials & Google Reviews (4.9★) | SN Associates & Co</title>
+        <meta name="description" content="Read verified reviews from 500+ businesses and startups trusting SN Associates & Co with their GST filings, audits, company incorporation, and tax advisory." />
+        <link rel="canonical" href="https://snassociatesandco.com/testimonials" />
+        <meta property="og:title" content="Client Testimonials & Google Reviews (4.9★) | SN Associates & Co" />
+        <meta property="og:description" content="Read verified reviews from 500+ businesses and startups trusting SN Associates & Co with their GST filings, audits, company incorporation, and tax advisory." />
+        <meta property="og:url" content="https://snassociatesandco.com/testimonials" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": ["AccountingService", "LegalService"],
+            "@id": "https://snassociatesandco.com/#organization",
+            "name": "SN Associates & Co",
+            "url": "https://snassociatesandco.com/",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "500",
+              "bestRating": "5",
+              "worstRating": "1"
+            },
+            "review": testimonials.map(t => ({
+              "@type": "Review",
+              "author": {
+                "@type": "Person",
+                "name": t.author
+              },
+              "reviewBody": t.quote,
+              "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": "5",
+                "bestRating": "5"
+              }
+            }))
+          })}
+        </script>
+      </Helmet>
       <div className="bg-slate-900 text-white py-16 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-blue-600/10 -skew-x-12 translate-x-1/2"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -95,6 +133,7 @@ const Testimonials: React.FC = () => {
                 href={googleReviewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Write a Google Review for SN Associates and Co (opens in new tab)"
                 className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold flex items-center gap-2 hover:bg-blue-600 transition-all shadow-xl hover:scale-105 active:scale-95 group"
               >
                 Write a Google Review <ExternalLink size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
