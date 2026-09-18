@@ -13,8 +13,8 @@ interface Config {
 }
 
 const config: Config = {
-    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
-    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'https://caxpqdkabqqkwrhrajus.supabase.co',
+    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_0A6rDI3EwkWN6k3LoixepQ_OZu23_Vc',
     razorpayKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
     apiUrl: import.meta.env.VITE_API_URL || '',
     isProduction: import.meta.env.PROD
