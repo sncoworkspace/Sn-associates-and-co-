@@ -1,4 +1,3 @@
-
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -30,6 +29,22 @@ const Blog = lazy(() => import('./pages/Blog'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+
+// Dedicated Statutory Service Landing Hubs
+const CompanyRegistration = lazy(() => import('./pages/service-pages/CompanyRegistration'));
+const GstServices = lazy(() => import('./pages/service-pages/GstServices'));
+const IncomeTaxServices = lazy(() => import('./pages/service-pages/IncomeTaxServices'));
+const TrademarkServices = lazy(() => import('./pages/service-pages/TrademarkServices'));
+const StartupIndiaServices = lazy(() => import('./pages/service-pages/StartupIndiaServices'));
+
+// Interactive Statutory & Tax Calculator Tools
+const GstCalculatorPage = lazy(() => import('./pages/tools/GstCalculatorPage'));
+const IncomeTaxCalculatorPage = lazy(() => import('./pages/tools/IncomeTaxCalculatorPage'));
+const IncorporationEstimatorPage = lazy(() => import('./pages/tools/IncorporationEstimatorPage'));
+
+// Compliance Calendar & Real Client Proof
+const ComplianceCalendar = lazy(() => import('./pages/ComplianceCalendar'));
+const CaseStudies = lazy(() => import('./pages/CaseStudies'));
 
 // Lightweight page loading fallback
 const PageLoader = () => (
@@ -100,6 +115,23 @@ const App: React.FC = () => {
                     <Route path="/services/tax" element={<Services />} />
                     <Route path="/services/audit" element={<Services />} />
                     <Route path="/services/gst" element={<Services />} />
+
+                    {/* Dedicated High-Value Statutory Service Pages */}
+                    <Route path="/services/company-registration" element={<CompanyRegistration />} />
+                    <Route path="/services/gst-registration-filing" element={<GstServices />} />
+                    <Route path="/services/income-tax-filing" element={<IncomeTaxServices />} />
+                    <Route path="/services/trademark-registration" element={<TrademarkServices />} />
+                    <Route path="/services/startup-india-msme" element={<StartupIndiaServices />} />
+
+                    {/* Interactive Financial & Statutory Tools */}
+                    <Route path="/tools/gst-calculator" element={<GstCalculatorPage />} />
+                    <Route path="/tools/income-tax-calculator" element={<IncomeTaxCalculatorPage />} />
+                    <Route path="/tools/incorporation-estimator" element={<IncorporationEstimatorPage />} />
+
+                    {/* Compliance Hub & Client Proof */}
+                    <Route path="/compliance-calendar" element={<ComplianceCalendar />} />
+                    <Route path="/case-studies" element={<CaseStudies />} />
+
                     <Route path="/testimonials" element={<Testimonials />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/news" element={<News />} />

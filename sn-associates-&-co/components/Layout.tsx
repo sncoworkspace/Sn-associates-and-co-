@@ -16,9 +16,10 @@ const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'About Us', path: '/about' },
   { label: 'Services', path: '/services' },
+  { label: 'Compliance Calendar', path: '/compliance-calendar' },
+  { label: 'Case Studies', path: '/case-studies' },
   { label: 'Resources', path: '/resources' },
   { label: 'Blog', path: '/blog' },
-  { label: 'News', path: '/news' },
   { label: 'SNAC Academy', path: '/snac-academy' },
   { label: 'Courses', path: '/store' },
   { label: 'Careers', path: '/careers' },
@@ -142,6 +143,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <nav className="hidden xl:flex space-x-1 items-center">
               {navItems.map((item) => (
                 <Link key={item.path} to={item.path} className={`text-xs xl:text-sm font-medium px-2 xl:px-3.5 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1.5 ${location.pathname === item.path ? 'bg-slate-100 text-blue-700 font-bold' : 'text-slate-600 hover:text-blue-700 hover:bg-slate-100'}`}>
+                  {item.label === 'Compliance Calendar' && <Calendar size={14} className="text-blue-500" />}
+                  {item.label === 'Case Studies' && <Sparkles size={14} className="text-blue-500" />}
                   {item.label === 'SNAC Academy' && <GraduationCap size={14} className="text-blue-500" />}
                   {item.label === 'Courses' && <BookOpen size={14} className="text-blue-500" />}
                   {item.label === 'Careers' && <Briefcase size={14} className="text-blue-500" />}

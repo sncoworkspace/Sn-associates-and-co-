@@ -1,129 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core High-Priority Pages -->
   <url>
     <loc>https://snassociatesandco.com/</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services</loc>
-    <lastmod>2026-09-14</lastmod>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Dedicated Statutory Service Landing Hubs -->
+  <url>
+    <loc>https://snassociatesandco.com/services/company-registration</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://snassociatesandco.com/pricing</loc>
-    <lastmod>2026-09-14</lastmod>
+    <loc>https://snassociatesandco.com/services/gst-registration-filing</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
+  <url>
+    <loc>https://snassociatesandco.com/services/income-tax-filing</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/services/trademark-registration</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/services/startup-india-msme</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Interactive Financial & Statutory Tools -->
+  <url>
+    <loc>https://snassociatesandco.com/tools/gst-calculator</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/tools/income-tax-calculator</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/tools/incorporation-estimator</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- Statutory Calendar & Social Proof -->
+  <url>
+    <loc>https://snassociatesandco.com/compliance-calendar</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/case-studies</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- Category & Domain Service Routes -->
   <url>
     <loc>https://snassociatesandco.com/services/tax</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/audit</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/gst</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/incorporation</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/accounting</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/roc</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/services/trademark</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- General Content & Knowledge Base Pages -->
   <url>
     <loc>https://snassociatesandco.com/about</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://snassociatesandco.com/contact</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/book-consultation</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/contact</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/testimonials</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://snassociatesandco.com/news</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://snassociatesandco.com/snac-academy</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://snassociatesandco.com/store</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://snassociatesandco.com/careers</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.80</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/resources</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/blog</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/news</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/snac-academy</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/store</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://snassociatesandco.com/careers</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/privacy-policy</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.50</priority>
   </url>
   <url>
     <loc>https://snassociatesandco.com/terms-of-service</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.50</priority>
   </url>
 </urlset>

@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /auth/callback
+Disallow: /checkout
+Disallow: /cart
+Disallow: /order-success
+Disallow: /my-learning
+Disallow: /reset-password
 
-Sitemap: https://snassociates.in/sitemap.xml
+Sitemap: https://snassociatesandco.com/sitemap.xml

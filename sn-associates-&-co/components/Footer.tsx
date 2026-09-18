@@ -62,35 +62,43 @@ const Footer: React.FC = () => {
                             <Globe size={18} className="text-blue-500" /> Quick Links
                         </h4>
                         <ul className="space-y-3">
-                            {['About Us', 'Services', 'Pricing', 'Contact', 'News', 'Careers', 'Resources'].map((item) => (
-                                <li key={item}>
+                            {[
+                                { name: 'About Us', path: '/about' },
+                                { name: 'Compliance Calendar', path: '/compliance-calendar' },
+                                { name: 'Client Case Studies', path: '/case-studies' },
+                                { name: 'Resources & E-Books', path: '/resources' },
+                                { name: 'SNAC Academy', path: '/snac-academy' },
+                                { name: 'Careers', path: '/careers' },
+                                { name: 'Contact Us', path: '/contact' }
+                            ].map((item) => (
+                                <li key={item.name}>
                                     <Link
-                                        to={`/${item.toLowerCase().replace(' ', '-')}`}
+                                        to={item.path}
                                         className="text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2 text-sm group"
                                     >
                                         <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 -ml-4 group-hover:ml-0 transition-all text-blue-500" />
-                                        {item}
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}
                         </ul>
                     </div>
 
-                    {/* Services */}
+                    {/* Services & Calculators */}
                     <div>
                         <h4 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                            <Scale size={18} className="text-blue-500" /> Top Services
+                            <Scale size={18} className="text-blue-500" /> Statutory Services & Tools
                         </h4>
-                        <ul className="space-y-3">
+                        <ul className="space-y-2.5">
                             {[
-                                { name: 'Company Registration', path: '/services/incorporation#private-limited-company-incorporation' },
-                                { name: 'GST Filing & Compliance', path: '/services/gst#gst-registration-filing' },
-                                { name: 'Income Tax Returns', path: '/services/tax#income-tax-return-filing' },
-                                { name: 'Statutory Audits', path: '/services/audit#corporate-statutory-audit' },
-                                { name: 'Virtual CFO Services', path: '/services/accounting#virtual-cfo-services' },
-                                { name: 'Corporate Governance & ROC', path: '/services/roc' },
-                                { name: 'Trademark & IP Services', path: '/services/trademark' },
-                                { name: 'Startup India Registration', path: '/services/incorporation#startup-india-registration' }
+                                { name: 'Company Registration (SPICe+)', path: '/services/company-registration' },
+                                { name: 'GST Registration & Returns', path: '/services/gst-registration-filing' },
+                                { name: 'Income Tax & Section 44AB', path: '/services/income-tax-filing' },
+                                { name: 'Trademark & Brand Protection', path: '/services/trademark-registration' },
+                                { name: 'Startup India & 80-IAC Holiday', path: '/services/startup-india-msme' },
+                                { name: 'GST Slabs & ITC Calculator', path: '/tools/gst-calculator' },
+                                { name: 'Old vs New Tax Calculator', path: '/tools/income-tax-calculator' },
+                                { name: 'MCA Stamp Duty Estimator', path: '/tools/incorporation-estimator' }
                             ].map((item) => (
                                 <li key={item.name}>
                                     <Link to={item.path} className="text-slate-400 hover:text-blue-400 transition-colors text-sm block truncate">
