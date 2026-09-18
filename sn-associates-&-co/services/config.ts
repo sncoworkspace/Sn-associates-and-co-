@@ -14,7 +14,7 @@ interface Config {
 
 const config: Config = {
     supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'https://caxpqdkabqqkwrhrajus.supabase.co',
-    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_0A6rDI3EwkWN6k3LoixepQ_OZu23_Vc',
+    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNheHBxZGthYnFxa3dyaHJhanVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODgwMTAsImV4cCI6MjA4MTg2NDAxMH0.GSU2e-ovjhOGKAi4c5vJxWD0Y3uiBPpqWWTocYohDck',
     razorpayKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
     apiUrl: import.meta.env.VITE_API_URL || '',
     isProduction: import.meta.env.PROD
