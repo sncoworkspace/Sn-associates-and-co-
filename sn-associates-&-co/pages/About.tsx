@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   Award,
   Users,
@@ -21,6 +23,7 @@ const serviceCategories = [
   {
     icon: Building2,
     title: "1. Business Entity Incorporation & Registration",
+    path: "/services/incorporation",
     items: [
       "Proprietorship Registration", "Partnership Firm Registration", "LLP Registration",
       "Private Limited Company Registration", "One Person Company (OPC)",
@@ -30,6 +33,7 @@ const serviceCategories = [
   {
     icon: FileText,
     title: "2. Post-Incorporation & Business Registrations",
+    path: "/services/gst",
     items: [
       "PAN & TAN Application", "GST Registration & Amendments", "MSME (Udyam) Registration",
       "Shop & Establishment License", "PF & ESI Registration", "Trade & FSSAI (Food) License",
@@ -39,6 +43,7 @@ const serviceCategories = [
   {
     icon: Scale,
     title: "3. Tax & Legal Compliance Services",
+    path: "/services/tax",
     items: [
       "Income Tax Advisory & ITR Filing", "Income Tax & GST Audit", "E-TDS Filing",
       "TDS Return Filing", "PT Registration (PTRC/PTEC)", "Representation & Appeals",
@@ -48,6 +53,7 @@ const serviceCategories = [
   {
     icon: Briefcase,
     title: "4. Outsourcing, Accounting & CFO Services",
+    path: "/services/accounting",
     items: [
       "Virtual CFO Services", "Outsourced Accounting & Bookkeeping", "Payroll & Labour Law",
       "CMA Data & Project Reports", "Business Valuation", "Due Diligence Services",
@@ -55,8 +61,29 @@ const serviceCategories = [
     ]
   },
   {
+    icon: ShieldCheck,
+    title: "5. Corporate Governance & ROC Compliances",
+    path: "/services/roc",
+    items: [
+      "Annual ROC Filings (AOC-4, MGT-7)", "Director KYC & DIN (DIR-3 KYC)",
+      "Appointment & Resignation of Directors", "Increase in Authorised Capital",
+      "Secretarial Audit & Annual Return", "Company Closure & Strike-Off (STK-2)"
+    ]
+  },
+  {
+    icon: Award,
+    title: "6. Trademark & Intellectual Property (IP)",
+    path: "/services/trademark",
+    items: [
+      "Trademark Search & Brand Filing", "Trademark Objection Reply",
+      "Trademark Hearing Representation", "Copyright Registration",
+      "Patent Search & Advisory", "Design Registration & IP Protection"
+    ]
+  },
+  {
     icon: Rocket,
-    title: "5. Digital, Technology & Growth Services",
+    title: "7. Digital, Technology & Growth Services",
+    path: "/services",
     items: [
       "Website Design & Development", "SEO-Optimized Business Websites", "Digital Marketing & Promotion",
       "Social Media Marketing (SMM)", "Google Ads Campaigns", "Lead Generation & Branding"
@@ -65,17 +92,61 @@ const serviceCategories = [
   },
   {
     icon: BookOpen,
-    title: "6. Courses & Knowledge Solutions",
+    title: "8. SNAC Academy: Professional Training",
+    path: "/academy",
     items: [
-      "GST Master Course (Practical)", "ITR Master Course", "Compliance Guides & Toolkits",
+      "GST Master Course (Practical)", "ITR Master Course & E-filing", "Compliance Guides & Toolkits",
       "Educational Content for Accountants", "Business Strategy E-Books"
     ]
   }
 ];
 
 const About: React.FC = () => {
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About SN Associates & Co",
+    "description": "Learn about SN Associates & Co, a premier multidisciplinary tax, legal, compliance, and accounting advisory firm based in Electronic City, Bangalore since 2015.",
+    "url": "https://snassociatesandco.com/about",
+    "mainEntity": {
+      "@type": "AccountingService",
+      "@id": "https://snassociatesandco.com/#organization",
+      "name": "SN Associates & Co",
+      "foundingDate": "2015",
+      "founder": {
+        "@type": "Person",
+        "name": "Nagendra M",
+        "jobTitle": "Founder & Senior Tax Consultant",
+        "image": "https://snassociatesandco.com/founder-nagendra.png"
+      },
+      "knowsAbout": [
+        "Goods and Services Tax (GST)",
+        "Income Tax Return (ITR) Filing",
+        "Company Registration & ROC Compliance",
+        "Corporate Statutory & Internal Audit",
+        "Startup India Registration",
+        "Virtual CFO Services"
+      ]
+    }
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen">
+      <Helmet>
+        <title>About SN Associates & Co | Trusted Tax & Legal Firm Since 2015</title>
+        <meta name="description" content="Learn about SN Associates & Co, a premier multidisciplinary tax, legal, compliance, and accounting advisory firm based in Electronic City, Bangalore." />
+        <link rel="canonical" href="https://snassociatesandco.com/about" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="About SN Associates & Co | Trusted Tax & Legal Firm Since 2015" />
+        <meta property="og:description" content="Learn about SN Associates & Co, a premier multidisciplinary tax, legal, compliance, and accounting advisory firm based in Electronic City, Bangalore." />
+        <meta property="og:url" content="https://snassociatesandco.com/about" />
+        <meta property="og:image" content="https://snassociatesandco.com/logo-base.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://snassociatesandco.com/logo-base.png" />
+        <script type="application/ld+json">
+          {JSON.stringify(aboutSchema)}
+        </script>
+      </Helmet>
       {/* Header */}
       <div className="bg-slate-900 text-white py-16 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 -skew-x-12 transform translate-x-1/2"></div>
@@ -123,28 +194,39 @@ const About: React.FC = () => {
             <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {serviceCategories.map((cat, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <cat.icon size={24} />
+              <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
+                      <cat.icon size={24} />
+                    </div>
+                    <h3 className="font-bold text-slate-900 leading-tight flex-1 text-base">
+                      {cat.title}
+                      {cat.isNew && (
+                        <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full animate-pulse">NEW🚀</span>
+                      )}
+                    </h3>
                   </div>
-                  <h3 className="font-bold text-slate-900 leading-tight flex-1">
-                    {cat.title}
-                    {cat.isNew && (
-                      <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full animate-pulse">NEW🚀</span>
+                  <ul className="space-y-2.5 mb-6">
+                    {cat.items.slice(0, 5).map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                        <ChevronRight size={14} className="mt-0.5 text-blue-500 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                    {cat.items.length > 5 && (
+                      <li className="text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-5">
+                        + {cat.items.length - 5} More Services
+                      </li>
                     )}
-                  </h3>
+                  </ul>
                 </div>
-                <ul className="space-y-3">
-                  {cat.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-500">
-                      <ChevronRight size={14} className="mt-1 text-blue-400 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <Link to={cat.path} className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-wider pt-3 border-t border-slate-100 group/link">
+                  <span>Explore Services</span>
+                  <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                </Link>
               </div>
             ))}
           </div>
@@ -161,8 +243,9 @@ const About: React.FC = () => {
             <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row gap-8 items-center sm:items-start h-full">
               <div className="w-48 h-60 rounded-xl flex-shrink-0 overflow-hidden bg-slate-100 border border-slate-200/50 shadow-inner flex items-center justify-center">
                 <img
-                  src="https://image2url.com/images/1764921610274-02af8ecd-5779-4cb4-8c10-03ae1ad5ea51.png"
-                  alt="Nagendra M"
+                  src="/founder-nagendra.png"
+                  alt="Nagendra M - Founder & Tax Consultant at SN Associates & Co"
+                  loading="lazy"
                   className="w-full h-full object-cover object-top grayscale-[20%] hover:grayscale-0 transition-all duration-500"
                 />
               </div>
