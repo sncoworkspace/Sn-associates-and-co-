@@ -579,6 +579,9 @@ const Resources: React.FC = () => {
                         <div className="relative w-full md:w-80">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input
+                                id="ebook-search-input"
+                                name="ebookSearch"
+                                aria-label="Search ebooks and legal resources"
                                 type="text"
                                 placeholder="Search by name, topic, or law..."
                                 value={ebookSearchQuery}

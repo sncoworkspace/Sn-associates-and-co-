@@ -194,6 +194,9 @@ const Services: React.FC = () => {
             <div className="relative flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
+                id="service-search-input"
+                name="serviceSearch"
+                aria-label="Search statutory and tax services"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -202,6 +205,8 @@ const Services: React.FC = () => {
               />
               {searchQuery && (
                 <button
+                  type="button"
+                  aria-label="Clear search input"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                 >
@@ -215,6 +220,9 @@ const Services: React.FC = () => {
               <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-3 shadow-sm">
                 <ArrowUpDown className="w-4 h-4 text-slate-500 mr-2 shrink-0" />
                 <select
+                  id="service-sort-select"
+                  name="serviceSort"
+                  aria-label="Sort services by relevance"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full bg-transparent text-sm font-medium text-slate-700 focus:outline-none cursor-pointer"

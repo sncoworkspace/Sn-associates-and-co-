@@ -330,6 +330,9 @@ export const ComplianceCalendar: React.FC = () => {
             {/* Search Input */}
             <div className="relative w-full sm:w-72">
               <input
+                id="calendar-search-input"
+                name="calendarSearch"
+                aria-label="Search compliance deadlines and statutory forms"
                 type="text"
                 placeholder="Search form, tax, or penalty..."
                 value={searchQuery}
@@ -435,6 +438,10 @@ export const ComplianceCalendar: React.FC = () => {
                   className="mt-6 flex flex-col sm:flex-row gap-3 max-w-md"
                 >
                   <input
+                    id="calendar-email-input"
+                    name="subscriberEmail"
+                    autoComplete="email"
+                    aria-label="Enter email or WhatsApp number for statutory alerts"
                     type="email"
                     required
                     placeholder="Enter official email or WhatsApp no."

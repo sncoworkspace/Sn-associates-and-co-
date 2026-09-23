@@ -166,19 +166,19 @@ const Login: React.FC = () => {
                     {mode === 'login' && (
                         <form onSubmit={handleLogin} className="space-y-5 animate-fadeIn">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Work Email</label>
+                                <label htmlFor="login-email" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Work Email</label>
                                 <div className="relative">
                                     <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
+                                    <input id="login-email" name="email" autoComplete="username" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center px-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Password</label>
+                                    <label htmlFor="login-password" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Password</label>
                                 </div>
                                 <div className="relative">
                                     <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full pl-11 pr-11 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
+                                    <input id="login-password" name="password" autoComplete="current-password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className="w-full pl-11 pr-11 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
                                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
@@ -203,24 +203,24 @@ const Login: React.FC = () => {
                     {mode === 'signup' && (
                         <form onSubmit={handleSignup} className="space-y-5 animate-fadeIn">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</label>
+                                <label htmlFor="signup-name" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</label>
                                 <div className="relative">
                                     <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="As per Identity Records" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
+                                    <input id="signup-name" name="name" autoComplete="name" type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="As per Identity Records" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Active Email</label>
+                                <label htmlFor="signup-email" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Active Email</label>
                                 <div className="relative">
                                     <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
+                                    <input id="signup-email" name="email" autoComplete="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Secure Password</label>
+                                <label htmlFor="signup-password" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Secure Password</label>
                                 <div className="relative">
                                     <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="Min 6 characters" className="w-full pl-11 pr-11 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
+                                    <input id="signup-password" name="password" autoComplete="new-password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="Min 6 characters" className="w-full pl-11 pr-11 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 focus:bg-white transition-all text-sm" />
                                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
@@ -237,10 +237,10 @@ const Login: React.FC = () => {
                             <h3 className="font-bold text-slate-800 text-lg">Account Recovery</h3>
                             <p className="text-xs text-slate-500 leading-relaxed px-4">Provide your registered email address and we will dispatch a secure authentication link for password reset.</p>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Work Email</label>
+                                <label htmlFor="forgot-email" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Work Email</label>
                                 <div className="relative">
                                     <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="primary@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all text-sm" />
+                                    <input id="forgot-email" name="email" autoComplete="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="primary@email.com" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all text-sm" />
                                 </div>
                             </div>
                             <button disabled={loading} className="w-full bg-slate-900 text-white font-black uppercase tracking-widest text-xs py-5 rounded-2xl transition-all shadow-lg active:scale-[0.98]">

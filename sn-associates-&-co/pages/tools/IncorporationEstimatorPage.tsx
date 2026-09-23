@@ -231,6 +231,9 @@ Get started: https://snassociatesandco.com/services/company-registration`;
                 </label>
                 <div className="relative">
                   <select
+                    id="state-select"
+                    name="selectedState"
+                    aria-label="Select state of registered office"
                     value={selectedState}
                     onChange={(e) => setSelectedState(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -248,7 +251,7 @@ Get started: https://snassociatesandco.com/services/company-registration`;
               {/* Authorized Capital Slider */}
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-semibold text-slate-800">
+                  <label htmlFor="capital-range-slider" className="text-sm font-semibold text-slate-800">
                     Authorized Share Capital
                   </label>
                   <span className="text-base font-bold text-indigo-700 bg-indigo-50 px-3 py-0.5 rounded-lg border border-indigo-100">
@@ -256,6 +259,9 @@ Get started: https://snassociatesandco.com/services/company-registration`;
                   </span>
                 </div>
                 <input
+                  id="capital-range-slider"
+                  name="capitalLakhs"
+                  aria-label="Select authorized share capital in lakhs"
                   type="range"
                   min={1}
                   max={50}
@@ -311,6 +317,8 @@ Get started: https://snassociatesandco.com/services/company-registration`;
                   <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-200 cursor-pointer transition-all bg-slate-50/50">
                     <div className="flex items-center gap-3">
                       <input
+                        id="addon-gst-checkbox"
+                        name="addonGst"
                         type="checkbox"
                         checked={includeGst}
                         onChange={(e) => setIncludeGst(e.target.checked)}
@@ -327,6 +335,8 @@ Get started: https://snassociatesandco.com/services/company-registration`;
                   <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-200 cursor-pointer transition-all bg-slate-50/50">
                     <div className="flex items-center gap-3">
                       <input
+                        id="addon-startup-checkbox"
+                        name="addonStartup"
                         type="checkbox"
                         checked={includeStartupIndia}
                         onChange={(e) => setIncludeStartupIndia(e.target.checked)}
@@ -343,6 +353,8 @@ Get started: https://snassociatesandco.com/services/company-registration`;
                   <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-200 cursor-pointer transition-all bg-slate-50/50">
                     <div className="flex items-center gap-3">
                       <input
+                        id="addon-trademark-checkbox"
+                        name="addonTrademark"
                         type="checkbox"
                         checked={includeTrademark}
                         onChange={(e) => setIncludeTrademark(e.target.checked)}

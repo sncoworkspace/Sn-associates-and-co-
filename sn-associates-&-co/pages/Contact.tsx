@@ -178,17 +178,17 @@ const Contact: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
-                <input type="text" id="name" name="name" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="John Doe" />
+                <input type="text" id="name" name="name" autoComplete="name" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="John Doe" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-                  <input type="email" id="email" name="email" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="john@example.com" />
+                  <input type="email" id="email" name="email" autoComplete="email" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="john@example.com" />
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-                  <input type="tel" id="phone" name="phone" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="+91 7406581456" />
+                  <input type="tel" id="phone" name="phone" autoComplete="tel" required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="+91 7406581456" />
                 </div>
               </div>
 
@@ -212,7 +212,7 @@ const Contact: React.FC = () => {
 
               <div>
                 <label htmlFor="company" className="block text-sm font-medium text-slate-700 mb-2">Company Name (Optional)</label>
-                <input type="text" id="company" name="company" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Your Company Ltd" />
+                <input type="text" id="company" name="company" autoComplete="organization" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Your Company Ltd" />
               </div>
 
               <div>

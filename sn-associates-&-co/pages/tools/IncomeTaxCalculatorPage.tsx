@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { SEOHead } from '../../components/SEOHead';
 import { 
@@ -134,6 +134,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                   Gross Annual Income (₹)
                 </label>
                 <input
+                  id="gross-income-input"
+                  name="grossIncome"
+                  aria-label="Gross Annual Income in Rupees"
                   type="number"
                   value={grossIncome}
                   onChange={(e) => setGrossIncome(Number(e.target.value))}
@@ -151,6 +154,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                       Section 80C (EPF, PPF, ELSS, Insurance) — Max ₹1.5L
                     </label>
                     <input
+                      id="sec-80c-input"
+                      name="sec80C"
+                      aria-label="Section 80C Deduction"
                       type="number"
                       value={sec80C}
                       onChange={(e) => setSec80C(Number(e.target.value))}
@@ -163,6 +169,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                       Section 80D Health Insurance (Self & Parents) — Up to ₹75K
                     </label>
                     <input
+                      id="sec-80d-input"
+                      name="sec80D"
+                      aria-label="Section 80D Health Insurance Deduction"
                       type="number"
                       value={sec80D}
                       onChange={(e) => setSec80D(Number(e.target.value))}
@@ -175,6 +184,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                       House Rent Allowance (HRA Exemption)
                     </label>
                     <input
+                      id="hra-input"
+                      name="hra"
+                      aria-label="House Rent Allowance Exemption"
                       type="number"
                       value={hra}
                       onChange={(e) => setHra(Number(e.target.value))}
@@ -187,6 +199,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                       Home Loan Interest u/s 24 — Max ₹2L
                     </label>
                     <input
+                      id="home-loan-interest-input"
+                      name="homeLoanInterest"
+                      aria-label="Home Loan Interest Deduction under Section 24"
                       type="number"
                       value={homeLoanInt}
                       onChange={(e) => setHomeLoanInt(Number(e.target.value))}
@@ -199,6 +214,9 @@ export const IncomeTaxCalculatorPage: React.FC = () => {
                       NPS Additional Contribution u/s 80CCD(1B) — Max ₹50K
                     </label>
                     <input
+                      id="nps-input"
+                      name="npsContribution"
+                      aria-label="NPS Additional Contribution under Section 80CCD"
                       type="number"
                       value={nps}
                       onChange={(e) => setNps(Number(e.target.value))}

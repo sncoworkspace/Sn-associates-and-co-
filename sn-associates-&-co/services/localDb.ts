@@ -399,24 +399,42 @@ export const formDb = {
         await sendNotification('Consultation Booking', bookingData);
     },
     getPublicBookedSlots: async (startDate: string, endDate: string, consultantId: string) => {
-        const { data, error } = await supabase.rpc('get_public_booked_slots_v2', {
-            start_date: startDate,
-            end_date: endDate,
-            p_consultant_id: consultantId
-        });
-        if (error) {
-            console.error("Failed to fetch public slots:", error);
+        try {
+            const { data, error } = await supabase.rpc('get_public_booked_slots_v2', {
+                start_date: startDate,
+                end_date: endDate,
+                p_consultant_id: consultantId
+            });
+            if (error) {
+                console.warn("Could not fetch public booked slots from Supabase, default to open availability:", error.message);
+                return [];
+            }
+            return data || [];
+        } catch (err) {
+            console.warn("Exception while fetching public booked slots:", err);
             return [];
         }
-        return data || [];
     },
     getBookings: async () => {
-        const { data } = await supabase.from('consultation_bookings').select('*').order('created_at', { ascending: false });
-        return data || [];
+        try {
+            const { data } = await supabase.from('consultation_bookings').select('*').order('created_at', { ascending: false });
+            return data || [];
+        } catch {
+            return [];
+        }
     },
     getConsultants: async () => {
-        const { data } = await supabase.from('consultants').select('*').eq('is_active', true).order('name');
-        return data || [];
+        try {
+            const { data, error } = await supabase.from('consultants').select('*').eq('is_active', true).order('name');
+            if (error) {
+                console.warn("Could not fetch consultants from Supabase:", error.message);
+                return [];
+            }
+            return data || [];
+        } catch (err) {
+            console.warn("Exception while fetching consultants:", err);
+            return [];
+        }
     },
     submitEnrollment: async (enrollmentData: any) => {
         console.log("Submitting enrollment to Supabase...", enrollmentData);

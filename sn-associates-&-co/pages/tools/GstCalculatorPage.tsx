@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { SEOHead } from '../../components/SEOHead';
 import { 
@@ -102,6 +102,9 @@ Calculated via SN Associates & Co (https://snassociatesandco.com/tools/gst-calcu
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">₹</span>
                   <input
+                    id="gst-amount-input"
+                    name="gstAmount"
+                    aria-label="Enter invoice amount in rupees"
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value))}
