@@ -260,7 +260,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
 
       <div className={`transition-all duration-300 w-full flex-none ${isScrolled ? 'h-14 md:h-16' : 'h-16 md:h-28'}`}></div>
-      <main className="flex-grow relative z-0 pb-20 lg:pb-0">{children}</main>
+      <main className="flex-grow pb-20 lg:pb-0">{children}</main>
       <WhatsAppButton />
       <VoiceAssistant />
       <ChatWidget />

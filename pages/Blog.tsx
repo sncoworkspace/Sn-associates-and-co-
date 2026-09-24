@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Search, Calendar, Clock, User, ArrowRight, Tag, Bookmark, 
     Share2, CheckCircle2, ChevronRight, Sparkles, BookOpen, 
@@ -277,12 +278,12 @@ const Blog: React.FC = () => {
             </div>
 
             {/* Full Article Modal Viewer */}
-            {selectedPost && (
+            {selectedPost && createPortal(
                 <div 
                     onClick={(e) => {
                         if (e.target === e.currentTarget) setSelectedPost(null);
                     }}
-                    className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
                 >
                     <div 
                         className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl relative border border-slate-200 overflow-hidden"
@@ -404,7 +405,8 @@ const Blog: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
