@@ -9,6 +9,7 @@ import VoiceAssistant from './VoiceAssistant';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
 import Analytics from './Analytics';
+import MobileBottomNav from './MobileBottomNav';
 import { authDb, cartDb } from '../services/localDb';
 import { SOCIAL_LINKS } from '../data/socialData';
 
@@ -253,17 +254,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Admin Quick Shortcut */}
       {user?.role === 'admin' && (
-        <button onClick={() => navigate('/admin')} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-full shadow-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-2 transition-all active:scale-95 border-2 border-white">
+        <button onClick={() => navigate('/admin')} className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-full shadow-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-2 transition-all active:scale-95 border-2 border-white">
           <Settings size={16} className="animate-spin-slow" /> Control Panel
         </button>
       )}
 
       <div className={`transition-all duration-300 w-full flex-none ${isScrolled ? 'h-14 md:h-16' : 'h-16 md:h-28'}`}></div>
-      <main className="flex-grow relative z-0">{children}</main>
+      <main className="flex-grow relative z-0 pb-20 lg:pb-0">{children}</main>
       <WhatsAppButton />
       <VoiceAssistant />
       <ChatWidget />
       <Footer />
+      <MobileBottomNav />
       <CookieConsent />
       <Analytics />
     </div>

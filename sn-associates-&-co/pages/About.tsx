@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -102,6 +102,7 @@ const serviceCategories = [
 ];
 
 const About: React.FC = () => {
+  const [imgError, setImgError] = useState(false);
   const aboutSchema = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
@@ -241,13 +242,24 @@ const About: React.FC = () => {
               The Founder
             </h2>
             <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row gap-8 items-center sm:items-start h-full">
-              <div className="w-48 h-60 rounded-xl flex-shrink-0 overflow-hidden bg-slate-100 border border-slate-200/50 shadow-inner flex items-center justify-center">
-                <img
-                  src="/founder-nagendra.png"
-                  alt="Nagendra M - Founder & Tax Consultant at SN Associates & Co"
-                  loading="lazy"
-                  className="w-full h-full object-cover object-top grayscale-[20%] hover:grayscale-0 transition-all duration-500"
-                />
+              <div className="w-48 h-60 rounded-xl flex-shrink-0 overflow-hidden bg-slate-100 border border-slate-200/50 shadow-inner flex items-center justify-center relative">
+                {!imgError ? (
+                  <img
+                    src="/founder-nagendra.png"
+                    alt="Nagendra M - Founder & Tax Consultant at SN Associates & Co"
+                    loading="lazy"
+                    onError={() => setImgError(true)}
+                    className="w-full h-full object-cover object-top hover:scale-105 transition-all duration-500"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center p-4 bg-gradient-to-br from-slate-900 to-blue-950 text-white w-full h-full">
+                    <div className="w-16 h-16 rounded-full bg-blue-600 border border-blue-400/40 flex items-center justify-center font-bold text-2xl mb-2 font-serif text-white shadow-lg">
+                      NM
+                    </div>
+                    <span className="font-bold text-sm text-white">Nagendra M</span>
+                    <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider mt-0.5">Founder & Auditor</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 text-center sm:text-left">

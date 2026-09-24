@@ -133,7 +133,7 @@ const ChatWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-40 flex flex-col items-end pointer-events-none">
       {isOpen && (
         <div className="pointer-events-auto bg-white rounded-3xl shadow-2xl w-[330px] sm:w-[380px] max-h-[540px] flex flex-col overflow-hidden mb-4 border border-slate-200 animate-fadeIn">
           {/* Header */}
